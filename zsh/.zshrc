@@ -1,7 +1,14 @@
 path=(/usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin)
 
+export LANG=ja_JP.UTF-8
+export TERM=xterm-256color
+export EDITOR=emacsclient
+
 # emacs keybind
 bindkey -e
+
+# delete 'C-j'
+bindkey -r '^J'
 
 # enable completion
 autoload -U compinit; compinit
@@ -18,12 +25,21 @@ setopt hist_ignore_dups
 setopt hist_ignore_space
 setopt share_history
 
-# delete 'C-j'
-bindkey -r '^J'
-
 # for incremental search
 bindkey '^R' history-incremental-pattern-search-backward
 bindkey '^S' history-incremental-pattern-search-forward
+
+# key binding of command history
+autoload history-search-end
+zle -N history-beginning-search-backward-end history-search-end
+zle -N history-beginning-search-forward-end history-search-end
+bindkey "^P" history-beginning-search-backward-end
+bindkey "^N" history-beginning-search-forward-end
+
+setopt auto_cd
+
+# use cd -
+setopt auto_pushd
 
 # not exit Ctrl-D
 setopt ignoreeof
@@ -60,6 +76,8 @@ setopt nolistbeep
 # String behind '#' is comment.
 setopt interactive_comments
 
+
+# PROMPT
 RPROMPT="%{${fg[blue]}%}[%~]%{${reset_color}%}"
 
 autoload -Uz vcs_info
@@ -72,5 +90,22 @@ zstyle ':vcs_info:*' actionformats '[%b|%a]'
 precmd () { vcs_info }
 RPROMPT=$RPROMPT'${vcs_info_msg_0_}'
 
+# alias
+# setup ls coloring
+local LIST_COLOR='di=34;1' 'ln=35' 'so=32' 'ex=32;1' 'bd=46;34' 'cd=43;34'
+zstyle ':completion:*' list-colors $LIST_COLOR
+alias ls='ls --color -F'
+if [ ! -e ~/.dir_colors ]; then
+    dircolors -p > ~/.dir_colors
+fi
+eval `dircolors ~/.dir_colors -b`
+
+alias ll='ls -l'
+alias df='df -h'
+alias grep='grep --color=auto'
+alias e='emacsclient'
+alias g='git'
+alias s='git status'
+alias d='git diff '
 
 path=($HOME/bin $path)
