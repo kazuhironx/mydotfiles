@@ -9,8 +9,22 @@
     (goto-char (point-max))
     (eval-print-last-sexp)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Packages
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(el-get-bundle elpa:hc-zenburn-theme)
+(el-get-bundle elpa:open-junk-file)
+
+(when (executable-find "mozc_emacs_helper")
+  (el-get-bundle elpa:mozc))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; My Funcs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun my/close-all-buffers ()
+  (interactive)
+  (mapc 'kill-buffer (buffer-list)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Basic Setting
@@ -21,45 +35,54 @@
 (set-language-environment "Japanese")
 (prefer-coding-system 'utf-8-unix)
 
-;; Coloring
-(global-font-lock-mode +1)
-
 ;; basic customize variables
 (custom-set-variables
- '(package-enable-at-startup nil)
- '(large-file-warning-threshold (* 25 1024 1024))
- '(dabbrev-case-fold-search nil)
- '(inhibit-startup-screen t)
- '(read-file-name-completion-ignore-case t)
- '(line-move-visual nil)
- '(set-mark-command-repeat-pop t)
- '(find-file-visit-truename t)
- '(comment-style 'multi-line)
- '(imenu-auto-rescan t)
- '(delete-auto-save-files t)
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(auto-save-file-name-transforms (\` ((".*" (\, temporary-file-directory) t))))
+ '(backup-directory-alist (\` ((".*" \, temporary-file-directory))))
+ '(comment-style (quote multi-line))
  '(create-lockfiles nil)
- '(backup-directory-alist `((".*" . ,temporary-file-directory)))
- '(auto-save-file-name-transforms `((".*" ,temporary-file-directory t))))
+ '(custom-safe-themes (quote ("bcc6775934c9adf5f3bd1f428326ce0dcd34d743a92df48c128e6438b815b44f" default)))
+ '(dabbrev-case-fold-search nil)
+ '(delete-auto-save-files t)
+ '(delete-selection-mode t)
+ '(find-file-visit-truename t)
+ '(imenu-auto-rescan t)
+ '(inhibit-startup-screen t)
+ '(large-file-warning-threshold (* 25 1024 1024))
+ '(line-move-visual nil)
+ '(mozc-candidate-style (quote echo-area))
+ '(mozc-leim-title "[あ]")
+ '(package-enable-at-startup nil)
+ '(read-file-name-completion-ignore-case t)
+ '(set-mark-command-repeat-pop t))
 
 (setq-default horizontal-scroll-bar nil)
+
+;; Coloring
+(global-font-lock-mode +1)
 
 ;; cursor
 (set-cursor-color "chartreuse2")
 (blink-cursor-mode t)
 
-;; for GC
+;; GC Setting
 (setq-default gc-cons-threshold (* gc-cons-threshold 10))
 
 ;; echo stroke
 (setq-default echo-keystrokes 0.1)
-;; I never use C-x C-c
+
+;; emacsを終了するときはM-x exitで
 (defalias 'exit 'save-buffers-kill-emacs)
 
-;; enable disabled commands
-(put 'narrow-to-region 'disabled nil)
+;; リージョンの大文字小文字変換
+;; C-x C-u で大文字に
+;; C-x C-l で小文字に
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
-(put 'set-goal-column 'disabled nil)
 
 ;; info for japanese
 (auto-compression-mode t)
@@ -122,22 +145,38 @@
 ;; fill-mode
 (setq-default fill-column 80)
 
-(defun close-all-buffers ()
-  (interactive)
-  (mapc 'kill-buffer (buffer-list)))
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Color Theme
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(load-theme 'hc-zenburn t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Key Binding
+;;; IME
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-hook 'input-method-activate-hook
+	  (lambda () (set-cursor-color "gold")))
+(add-hook 'input-method-inactivate-hook
+	  (lambda () (set-cursor-color "chartreuse2")))
 
-(keyboard-translate ?\C-h ?\C-?)  ; translate `C-h' to DEL
+(custom-set-variables
+ '(mozc-candidate-style 'echo-area)
+ '(mozc-leim-title "[も]"))
 
+(when (and (require 'mozc nil t) (executable-find "mozc_emacs_helper"))
+  (setq default-input-method "japanese-mozc")
+  (global-set-key (kbd "C-\\") 'mozc-mode))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Global Key Binding
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq mac-command-modifier 'super)
 (setq mac-option-modifier 'meta)
 
+(keyboard-translate ?\C-h ?\C-?)  ; translate `C-h' to DEL
+
+;; global map
 (define-key global-map (kbd "C-o") 'dabbrev-expand)
 
-;; custom of the ctl-x-map
-(define-key ctl-x-map (kbd "C-c") 'close-all-buffers)
+;; ctl-x-map
+(define-key ctl-x-map (kbd "C-c") 'my/close-all-buffers)
 (define-key ctl-x-map (kbd "l") 'goto-line)
