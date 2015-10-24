@@ -12,12 +12,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Packages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(el-get-bundle elpa:hc-zenburn-theme)
+;; hc-zenburn
+(el-get-bundle elpa:hc-zenburn-theme
+  (add-to-list 'custom-theme-load-path default-directory))
+
+;; open-junk-file
 (el-get-bundle elpa:open-junk-file)
 
+;; mozc
 (when (executable-find "mozc_emacs_helper")
   (el-get-bundle elpa:mozc))
 
+;; helm
+(el-get-bundle emacs-helm/helm)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; My Funcs
@@ -37,15 +44,10 @@
 
 ;; basic customize variables
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
  '(auto-save-file-name-transforms (\` ((".*" (\, temporary-file-directory) t))))
  '(backup-directory-alist (\` ((".*" \, temporary-file-directory))))
  '(comment-style (quote multi-line))
  '(create-lockfiles nil)
- '(custom-safe-themes (quote ("bcc6775934c9adf5f3bd1f428326ce0dcd34d743a92df48c128e6438b815b44f" default)))
  '(dabbrev-case-fold-search nil)
  '(delete-auto-save-files t)
  '(delete-selection-mode t)
@@ -54,8 +56,6 @@
  '(inhibit-startup-screen t)
  '(large-file-warning-threshold (* 25 1024 1024))
  '(line-move-visual nil)
- '(mozc-candidate-style (quote echo-area))
- '(mozc-leim-title "[あ]")
  '(package-enable-at-startup nil)
  '(read-file-name-completion-ignore-case t)
  '(set-mark-command-repeat-pop t))
@@ -151,6 +151,22 @@
 (load-theme 'hc-zenburn t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Fonts
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(set-face-attribute 'default nil
+                    :family "Ricty Diminished Discord"
+                    :height 110)
+(set-fontset-font (frame-parameter nil 'font)
+                  'japanese-jisx0208
+                  (cons "Ricty Diminished Discord" "iso10646-1"))
+(set-fontset-font (frame-parameter nil 'font)
+                  'japanese-jisx0212
+                  (cons "Ricty Diminished Discord" "iso10646-1"))
+(set-fontset-font (frame-parameter nil 'font)
+                  'katakana-jisx0201
+                  (cons "Ricty Diminished Discord" "iso10646-1"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; IME
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (add-hook 'input-method-activate-hook
@@ -164,7 +180,7 @@
 
 (when (and (require 'mozc nil t) (executable-find "mozc_emacs_helper"))
   (setq default-input-method "japanese-mozc")
-  (global-set-key (kbd "C-\\") 'mozc-mode))
+  (global-set-key (kbd "C-z") 'toggle-input-method))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Global Key Binding
@@ -180,3 +196,29 @@
 ;; ctl-x-map
 (define-key ctl-x-map (kbd "C-c") 'my/close-all-buffers)
 (define-key ctl-x-map (kbd "l") 'goto-line)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Helm
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(custom-set-variables
+ '(helm-input-idle-delay 0)
+ '(helm-exit-idle-delay 0)
+ '(helm-candidate-number-limit 500)
+ '(helm-ag-insert-at-point 'symbol)
+ '(helm-find-files-doc-header "")
+ '(helm-command-prefix-key nil))
+
+(with-eval-after-load 'helm
+  (helm-descbinds-mode)
+
+  (define-key helm-map (kbd "C-p")   'helm-previous-line)
+  (define-key helm-map (kbd "C-n")   'helm-next-line)
+  (define-key helm-map (kbd "C-M-n") 'helm-next-source)
+  (define-key helm-map (kbd "C-M-p") 'helm-previous-source)
+  (define-key helm-map (kbd "C-e") 'helm-editutil-select-2nd-action)
+  (define-key helm-map (kbd "C-j") 'helm-editutil-select-3rd-action))
+
+;; helm faces
+(with-eval-after-load 'helm-files
+  (define-key helm-find-files-map (kbd "C-M-u") 'helm-find-files-down-one-level)
+  (define-key helm-find-files-map (kbd "C-c C-o") 'helm-ff-run-switch-other-window))
