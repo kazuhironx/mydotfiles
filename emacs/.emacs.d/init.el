@@ -12,8 +12,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Packages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; hc-zenburn
+;; color-theme : hc-zenburn
 (el-get-bundle elpa:hc-zenburn-theme
+  (add-to-list 'custom-theme-load-path default-directory))
+
+;; color-theme : spacemacs-them
+(el-get-bundle elpa:spacemacs-theme
   (add-to-list 'custom-theme-load-path default-directory))
 
 ;; open-junk-file
@@ -36,6 +40,18 @@
   (interactive)
   (mapc 'kill-buffer (buffer-list)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; IME
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-hook 'input-method-activate-hook
+	  (lambda () (set-cursor-color "gold")))
+(add-hook 'input-method-inactivate-hook
+	  (lambda () (set-cursor-color "chartreuse2")))
+
+(when (and (require 'mozc nil t) (executable-find "mozc_emacs_helper"))
+  (setq default-input-method "japanese-mozc")
+  (global-set-key (kbd "C-\\") 'toggle-input-method))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Basic Setting
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -47,6 +63,10 @@
 
 ;; basic customize variables
 (custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(auto-save-file-name-transforms (\` ((".*" (\, temporary-file-directory) t))))
  '(backup-directory-alist (\` ((".*" \, temporary-file-directory))))
  '(comment-style (quote multi-line))
@@ -59,6 +79,8 @@
  '(inhibit-startup-screen t)
  '(large-file-warning-threshold (* 25 1024 1024))
  '(line-move-visual nil)
+ '(mozc-candidate-style (quote echo-area))
+ '(mozc-leim-title "[も]")
  '(package-enable-at-startup nil)
  '(read-file-name-completion-ignore-case t)
  '(set-mark-command-repeat-pop t))
@@ -151,6 +173,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Color Theme
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(load-theme 'spacemacs-dark t)
+(load-theme 'spacemacs-light t)
 (load-theme 'hc-zenburn t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -169,29 +193,48 @@
                   'katakana-jisx0201
                   (cons "Ricty Diminished Discord" "iso10646-1"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; IME
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-hook 'input-method-activate-hook
-	  (lambda () (set-cursor-color "gold")))
-(add-hook 'input-method-inactivate-hook
-	  (lambda () (set-cursor-color "chartreuse2")))
-
-(custom-set-variables
- '(mozc-candidate-style 'echo-area)
- '(mozc-leim-title "[も]"))
-
-(when (and (require 'mozc nil t) (executable-find "mozc_emacs_helper"))
-  (setq default-input-method "japanese-mozc")
-  (global-set-key (kbd "C-z") 'toggle-input-method))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'helm-config)
 (require 'helm-descbinds)
 
-(helm-descbinds-mode)
+(custom-set-variables
+ '(helm-input-delay 0)
+ '(helm-input-idle-delay 0)
+ '(helm-exit-idle-delay 0)
+ '(helm-candidate-number-limit 100)
+ '(helm-command-prefix-key nil))
+
+(with-eval-after-load 'helm
+  (helm-descbinds-mode)
+
+  (define-key global-map (kbd "C-q") 'helm-mini)
+  (define-key global-map (kbd "M-x") 'helm-M-x)
+  (define-key global-map (kbd "C-;") 'helm-for-files)
+  (define-key global-map (kbd "C-x C-f") 'helm-find-files)
+  (define-key global-map (kbd "C-x C-r") 'helm-recentf)
+  (define-key global-map (kbd "M-y") 'helm-show-kill-ring)
+  (define-key global-map (kbd "C-x b") 'helm-buffers-list)
+
+  (define-key helm-map (kbd "C-p")   'helm-previous-line)
+  (define-key helm-map (kbd "C-n")   'helm-next-line)
+  (define-key helm-map (kbd "C-M-n") 'helm-next-source)
+  (define-key helm-map (kbd "C-M-p") 'helm-previous-source)
+  (define-key helm-map (kbd "C-e") 'helm-editutil-select-2nd-action)
+  (define-key helm-map (kbd "C-j") 'helm-editutil-select-3rd-action)
+  (define-key helm-map (kbd "C-h") 'delete-backward-char))
+
+;; helm faces
+(with-eval-after-load 'helm-files
+  (define-key helm-find-files-map (kbd "C-h") 'delete-backward-char)
+  (define-key helm-find-files-map (kbd "C-M-u") 'helm-find-files-down-one-level)
+  (define-key helm-find-files-map (kbd "C-c C-o") 'helm-ff-run-switch-other-window)
+  (define-key helm-find-files-map (kbd "TAB") 'helm-execute-persistent-action))
+
+(with-eval-after-load 'helm-read-file
+  (define-key helm-read-file-map (kbd "C-h") 'delete-backward-char)
+  (define-key helm-read-file-map (kbd "TAB") 'helm-execute-persistent-action))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Global Key Binding
@@ -208,3 +251,9 @@
 (define-key ctl-x-map (kbd "C-c") 'my/close-all-buffers)
 (define-key ctl-x-map (kbd "l") 'goto-line)
 
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
