@@ -12,6 +12,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Packages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; auto-complete
+(el-get-bundle auto-complete/popup-el :name popup)
+(el-get-bundle auto-complete/fuzzy-el :name fuzzy)
+(el-get-bundle auto-complete/auto-complete)
+(el-get-bundle auto-complete-clang-async)
+
 ;; color-theme : hc-zenburn
 (el-get-bundle elpa:hc-zenburn-theme
   (add-to-list 'custom-theme-load-path default-directory))
@@ -20,6 +26,15 @@
 (el-get-bundle elpa:spacemacs-theme
   (add-to-list 'custom-theme-load-path default-directory))
 
+;; dash
+(el-get-bundle dash)
+
+;; fly-check
+(el-get-bundle flycheck/flycheck)
+
+;; fly-make
+(el-get-bundle flymake)
+
 ;; open-junk-file
 (el-get-bundle elpa:open-junk-file)
 
@@ -27,18 +42,17 @@
 (when (executable-find "mozc_emacs_helper")
   (el-get-bundle elpa:mozc))
 
+;; google-coding-style
+(el-get-bundle elpa:google-c-style)
+
 ;; helm
 (el-get-bundle helm)
 (el-get-bundle helm-descbinds)
 (el-get-bundle helm-gtags)
 (el-get-bundle helm-ag)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; My Funcs
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun my/close-all-buffers ()
-  (interactive)
-  (mapc 'kill-buffer (buffer-list)))
+;; yasnippet
+(el-get-bundle yasnippet)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; IME
@@ -63,10 +77,6 @@
 
 ;; basic customize variables
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
  '(auto-save-file-name-transforms (\` ((".*" (\, temporary-file-directory) t))))
  '(backup-directory-alist (\` ((".*" \, temporary-file-directory))))
  '(comment-style (quote multi-line))
@@ -174,8 +184,9 @@
 ;;; Color Theme
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (load-theme 'spacemacs-dark t)
-(load-theme 'spacemacs-light t)
-(load-theme 'hc-zenburn t)
+;(load-theme 'spacemacs-light t)
+;(load-theme 'hc-zenburn t)
+;(enable-theme 'hc-zenburn t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fonts
@@ -211,7 +222,6 @@
 
   (define-key global-map (kbd "C-q") 'helm-mini)
   (define-key global-map (kbd "M-x") 'helm-M-x)
-  (define-key global-map (kbd "C-;") 'helm-for-files)
   (define-key global-map (kbd "C-x C-f") 'helm-find-files)
   (define-key global-map (kbd "C-x C-r") 'helm-recentf)
   (define-key global-map (kbd "M-y") 'helm-show-kill-ring)
@@ -221,20 +231,73 @@
   (define-key helm-map (kbd "C-n")   'helm-next-line)
   (define-key helm-map (kbd "C-M-n") 'helm-next-source)
   (define-key helm-map (kbd "C-M-p") 'helm-previous-source)
-  (define-key helm-map (kbd "C-e") 'helm-editutil-select-2nd-action)
-  (define-key helm-map (kbd "C-j") 'helm-editutil-select-3rd-action)
   (define-key helm-map (kbd "C-h") 'delete-backward-char))
 
 ;; helm faces
 (with-eval-after-load 'helm-files
   (define-key helm-find-files-map (kbd "C-h") 'delete-backward-char)
-  (define-key helm-find-files-map (kbd "C-M-u") 'helm-find-files-down-one-level)
-  (define-key helm-find-files-map (kbd "C-c C-o") 'helm-ff-run-switch-other-window)
+  (define-key helm-find-files-map (kbd "M-l") 'helm-find-files-down-last-level)
   (define-key helm-find-files-map (kbd "TAB") 'helm-execute-persistent-action))
 
 (with-eval-after-load 'helm-read-file
   (define-key helm-read-file-map (kbd "C-h") 'delete-backward-char)
   (define-key helm-read-file-map (kbd "TAB") 'helm-execute-persistent-action))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Open Junk File
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'open-junk-file)
+(setq open-junk-file-format "~/junk/%Y/%m/%Y-%m-%d-%H%M%S.")
+(global-set-key (kbd "C-x C-z") 'open-junk-file)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Auto Complete
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'auto-complete)
+(ac-config-default)
+
+(custom-set-variables
+ `(ac-dictionary-directories ,(concat user-emacs-directory "ac-dict"))
+ '(ac-use-fuzzy t)
+ '(ac-auto-start nil)
+ '(ac-use-menu-map t)
+ '(ac-quick-help-delay 1.0))
+
+(define-key ac-complete-mode-map (kbd "C-n") 'ac-next)
+(define-key ac-complete-mode-map (kbd "C-p") 'ac-previous)
+(define-key ac-complete-mode-map (kbd "C-s") 'ac-isearch)
+(define-key ac-completing-map (kbd "<tab>") 'ac-complete)
+(define-key ac-completing-map (kbd "C-i") 'ac-complete)
+
+(require 'auto-complete-clang-async)
+(defun ac-cc-mode-setup ()
+  (setq ac-clang-complete-executable "/usr/local/bin/clang-complete")
+  (setq ac-sources '(ac-source-clang-async))
+  (ac-clang-launch-completion-process)
+)
+(my-ac-config)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; C
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(with-eval-after-load 'cc-mode
+  (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+  (define-key c-mode-map (kbd "C-c c") 'compile)
+  (require 'google-c-style))
+
+(defun my/c-mode-hook ()
+  (google-set-c-style)
+  (google-make-newline-indent)
+  (flycheck-mode)
+  (ac-cc-mode-setup)
+  (global-auto-complete-mode t)
+  (setq indent-tabs-mode nil)
+  (c-toggle-auto-hungry-state 1)
+  (c-toggle-electric-state -1))
+
+(add-hook 'c-mode-hook 'my/c-mode-hook)
+(add-hook 'c++-mode-hook 'my/c-mode-hook)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Global Key Binding
@@ -243,17 +306,15 @@
 (setq mac-option-modifier 'meta)
 
 (keyboard-translate ?\C-h ?\C-?)  ; translate `C-h' to DEL
+(global-unset-key (kbd "C-z"))
 
 ;; global map
 (define-key global-map (kbd "C-o") 'dabbrev-expand)
 
 ;; ctl-x-map
+(defun my/close-all-buffers ()
+  (interactive)
+  (mapc 'kill-buffer (buffer-list)))
+
 (define-key ctl-x-map (kbd "C-c") 'my/close-all-buffers)
 (define-key ctl-x-map (kbd "l") 'goto-line)
-
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
