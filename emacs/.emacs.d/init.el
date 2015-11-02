@@ -205,6 +205,13 @@
                   (cons "Ricty Diminished Discord" "iso10646-1"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Open Junk File
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'open-junk-file)
+(setq open-junk-file-format "~/junk/%Y/%m/%Y-%m-%d-%H%M%S.")
+(global-set-key (kbd "C-x C-z") 'open-junk-file)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'helm-config)
@@ -243,6 +250,24 @@
   (define-key helm-read-file-map (kbd "C-h") 'delete-backward-char)
   (define-key helm-read-file-map (kbd "TAB") 'helm-execute-persistent-action))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; helm-gtags
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(custom-set-variables
+ '(helm-gtags-path-style 'relative)
+ '(helm-gtags-ignore-case t)
+ '(helm-gtags-auto-update t))
+
+(with-eval-after-load 'helm-gtags
+  (define-key helm-gtags-mode-map (kbd "M-t") 'helm-gtags-find-tag)
+  (define-key helm-gtags-mode-map (kbd "M-r") 'helm-gtags-find-rtag)
+  (define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-find-symbol)
+  (define-key helm-gtags-mode-map (kbd "M-g M-p") 'helm-gtags-parse-file)
+  (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
+  (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
+  (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Open Junk File
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -269,13 +294,43 @@
 (define-key ac-completing-map (kbd "<tab>") 'ac-complete)
 (define-key ac-completing-map (kbd "C-i") 'ac-complete)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Auto Complete Clang Async
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'auto-complete-clang-async)
 (defun ac-cc-mode-setup ()
   (setq ac-clang-complete-executable "/usr/local/bin/clang-complete")
   (setq ac-sources '(ac-source-clang-async))
   (ac-clang-launch-completion-process)
 )
-(my-ac-config)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; ggtags
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (require 'ggtags)
+;; (add-hook 'c-mode-common-hook
+;;           (lambda ()
+;;             (when (derived-mode-p 'c-mode 'c++-mode 'java-mode 'asm-mode)
+;;               (ggtags-mode 1))))
+ 
+;; ;; use helm
+;; (setq ggtags-completing-read-function nil)
+ 
+;; ;; use eldoc
+;; (setq-local eldoc-documentation-function #'ggtags-eldoc-function)
+ 
+;; ;; imenu
+;; (setq-local imenu-create-index-function #'ggtags-build-imenu-index)
+ 
+;; (define-key ggtags-mode-map (kbd "C-c g s") 'ggtags-find-other-symbol)
+;; (define-key ggtags-mode-map (kbd "C-c g h") 'ggtags-view-tag-history)
+;; (define-key ggtags-mode-map (kbd "C-c g r") 'ggtags-find-reference)
+;; (define-key ggtags-mode-map (kbd "C-c g f") 'ggtags-find-file)
+;; (define-key ggtags-mode-map (kbd "C-c g c") 'ggtags-create-tags)
+;; (define-key ggtags-mode-map (kbd "C-c g u") 'ggtags-update-tags)
+ 
+;; (define-key ggtags-mode-map (kbd "M-,") 'pop-tag-mark)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C
@@ -285,18 +340,26 @@
   (define-key c-mode-map (kbd "C-c c") 'compile)
   (require 'google-c-style))
 
-(defun my/c-mode-hook ()
+(defun my/cc-mode-hook ()
   (google-set-c-style)
   (google-make-newline-indent)
   (flycheck-mode)
   (ac-cc-mode-setup)
   (global-auto-complete-mode t)
+  (helm-gtags-mode)
   (setq indent-tabs-mode nil)
   (c-toggle-auto-hungry-state 1)
   (c-toggle-electric-state -1))
 
+(defun my/c-mode-hook ()
+  (my/cc-mode-hook))
+
+(defun my/c++-mode-hook ()
+  (my/cc-mode-hook)
+  (setq flycheck-clang-language-standard "c++11"))
+
 (add-hook 'c-mode-hook 'my/c-mode-hook)
-(add-hook 'c++-mode-hook 'my/c-mode-hook)
+(add-hook 'c++-mode-hook 'my/c++-mode-hook)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
