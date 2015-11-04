@@ -269,6 +269,13 @@
   (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; helm-ag
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq helm-ag-things-at-point 'symbol)
+(global-set-key (kbd "C-M-g") 'helm-ag)
+(global-set-key (kbd "C-M-,") 'helm-ag-pop-stack)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Open Junk File
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'open-junk-file)
