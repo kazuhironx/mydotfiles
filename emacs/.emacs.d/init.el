@@ -181,6 +181,23 @@
 (setq-default fill-column 80)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Dired
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(with-eval-after-load 'dired
+  (put 'dired-find-alternate-file 'disabled nil)
+  (define-key dired-mode-map (kbd "C-M-u") 'dired-up-directory)
+  (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode))
+
+(custom-set-variables
+ '(dired-listing-switches "-aFlhn --time-style=iso")
+ '(dired-dwim-target t)
+ '(dired-auto-revert-buffer t)
+ '(dired-isearch-filenames t)
+ '(dired-recursive-copies 'always)
+ '(dired-recursive-deletes 'always))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Color Theme
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (load-theme 'spacemacs-dark t)
@@ -191,25 +208,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fonts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(set-face-attribute 'default nil
-                    :family "Ricty Diminished Discord"
-                    :height 110)
-(set-fontset-font (frame-parameter nil 'font)
-                  'japanese-jisx0208
-                  (cons "Ricty Diminished Discord" "iso10646-1"))
-(set-fontset-font (frame-parameter nil 'font)
-                  'japanese-jisx0212
-                  (cons "Ricty Diminished Discord" "iso10646-1"))
-(set-fontset-font (frame-parameter nil 'font)
-                  'katakana-jisx0201
-                  (cons "Ricty Diminished Discord" "iso10646-1"))
+(if (display-graphic-p)
+    (set-face-attribute 'default nil
+			:family "Ricty Diminished Discord"
+			:height 110))
+(if (display-graphic-p)
+    (set-fontset-font (frame-parameter nil 'font)
+		      'japanese-jisx0208
+		      (cons "Ricty Diminished Discord" "iso10646-1")))
+(if (display-graphic-p)
+    (set-fontset-font (frame-parameter nil 'font)
+		      'japanese-jisx0212
+		      (cons "Ricty Diminished Discord" "iso10646-1")))
+(if (display-graphic-p)
+    (set-fontset-font (frame-parameter nil 'font)
+		      'katakana-jisx0201
+		      (cons "Ricty Diminished Discord" "iso10646-1")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Open Junk File
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'open-junk-file)
 (setq open-junk-file-format "~/junk/%Y/%m/%Y-%m-%d-%H%M%S.")
-(global-set-key (kbd "C-x C-z") 'open-junk-file)
+(global-set-key (kbd "C-x z") 'open-junk-file)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helm
@@ -260,27 +281,27 @@
  '(helm-gtags-auto-update t))
 
 (with-eval-after-load 'helm-gtags
-  (define-key helm-gtags-mode-map (kbd "M-t") 'helm-gtags-find-tag)
+  (define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-find-tag)
   (define-key helm-gtags-mode-map (kbd "M-r") 'helm-gtags-find-rtag)
   (define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-find-symbol)
   (define-key helm-gtags-mode-map (kbd "M-g M-p") 'helm-gtags-parse-file)
   (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
   (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
-  (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack))
+  (define-key helm-gtags-mode-map (kbd "M-*") 'helm-gtags-pop-stack))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; helm-ag
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq helm-ag-things-at-point 'symbol)
-(global-set-key (kbd "C-M-g") 'helm-ag)
-(global-set-key (kbd "C-M-,") 'helm-ag-pop-stack)
+(global-set-key (kbd "M-g g") 'helm-ag)
+(global-set-key (kbd "M-g *") 'helm-ag-pop-stack)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Open Junk File
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'open-junk-file)
 (setq open-junk-file-format "~/junk/%Y/%m/%Y-%m-%d-%H%M%S.")
-(global-set-key (kbd "C-x C-z") 'open-junk-file)
+(global-set-key (kbd "C-x z") 'open-junk-file)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Auto Complete
