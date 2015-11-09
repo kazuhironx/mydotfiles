@@ -35,6 +35,9 @@
 ;; fly-make
 (el-get-bundle flymake)
 
+;; git-gutter
+(el-get-bundle git-gutter)
+
 ;; open-junk-file
 (el-get-bundle elpa:open-junk-file)
 
@@ -50,6 +53,9 @@
 (el-get-bundle helm-descbinds)
 (el-get-bundle helm-gtags)
 (el-get-bundle helm-ag)
+
+;; undo-tree
+(el-get-bundle undo-tree)
 
 ;; yasnippet
 (el-get-bundle yasnippet)
@@ -97,10 +103,13 @@
 
 (setq-default horizontal-scroll-bar nil)
 
+;; Paren-mode
+(show-paren-mode 1)
+
 ;; Coloring
 (global-font-lock-mode +1)
 
-;; cursor
+;; Cursor
 (set-cursor-color "chartreuse2")
 (blink-cursor-mode t)
 
@@ -180,6 +189,7 @@
 ;; fill-mode
 (setq-default fill-column 80)
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dired
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -189,13 +199,12 @@
   (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode))
 
 (custom-set-variables
- '(dired-listing-switches "-aFlhn --time-style=iso")
+ '(dired-listing-switches "-aFlh -nogo --time-style=iso")
  '(dired-dwim-target t)
  '(dired-auto-revert-buffer t)
  '(dired-isearch-filenames t)
  '(dired-recursive-copies 'always)
  '(dired-recursive-deletes 'always))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Color Theme
@@ -224,6 +233,26 @@
     (set-fontset-font (frame-parameter nil 'font)
 		      'katakana-jisx0201
 		      (cons "Ricty Diminished Discord" "iso10646-1")))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Diff
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(with-eval-after-load 'diff-mode
+  (define-key diff-mode-map (kbd "C-M-n") 'diff-file-next)
+  (define-key diff-mode-map (kbd "C-M-p") 'diff-file-prev))
+
+;; ediff
+(custom-set-variables
+ '(ediff-window-setup-function 'ediff-setup-windows-plain)
+ '(ediff-split-window-function 'split-window-horizontally)
+ '(ediff-diff-options "-twB"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; undo-tree
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'undo-tree)
+(global-undo-tree-mode t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Open Junk File
@@ -332,33 +361,10 @@
   (ac-clang-launch-completion-process)
 )
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; ggtags
+;;; Git
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (require 'ggtags)
-;; (add-hook 'c-mode-common-hook
-;;           (lambda ()
-;;             (when (derived-mode-p 'c-mode 'c++-mode 'java-mode 'asm-mode)
-;;               (ggtags-mode 1))))
- 
-;; ;; use helm
-;; (setq ggtags-completing-read-function nil)
- 
-;; ;; use eldoc
-;; (setq-local eldoc-documentation-function #'ggtags-eldoc-function)
- 
-;; ;; imenu
-;; (setq-local imenu-create-index-function #'ggtags-build-imenu-index)
- 
-;; (define-key ggtags-mode-map (kbd "C-c g s") 'ggtags-find-other-symbol)
-;; (define-key ggtags-mode-map (kbd "C-c g h") 'ggtags-view-tag-history)
-;; (define-key ggtags-mode-map (kbd "C-c g r") 'ggtags-find-reference)
-;; (define-key ggtags-mode-map (kbd "C-c g f") 'ggtags-find-file)
-;; (define-key ggtags-mode-map (kbd "C-c g c") 'ggtags-create-tags)
-;; (define-key ggtags-mode-map (kbd "C-c g u") 'ggtags-update-tags)
- 
-;; (define-key ggtags-mode-map (kbd "M-,") 'pop-tag-mark)
+(global-git-gutter-mode +1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C
@@ -398,6 +404,7 @@
 
 (keyboard-translate ?\C-h ?\C-?)  ; translate `C-h' to DEL
 (global-unset-key (kbd "C-z"))
+(global-unset-key (kbd "C-x C-z"))
 
 ;; global map
 (define-key global-map (kbd "C-o") 'dabbrev-expand)
