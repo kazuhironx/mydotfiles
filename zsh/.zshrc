@@ -100,7 +100,7 @@ if [ ! -e ~/.dir_colors ]; then
 fi
 eval `dircolors ~/.dir_colors -b`
 
-alias ll='ls -l'
+alias ll='ls -la'
 alias df='df -h'
 alias grep='grep --color=auto'
 alias e='emacsclient'
