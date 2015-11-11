@@ -41,6 +41,9 @@
 ;; open-junk-file
 (el-get-bundle elpa:open-junk-file)
 
+;; magit
+(el-get-bundle magit)
+
 ;; mozc
 (when (executable-find "mozc_emacs_helper")
   (el-get-bundle elpa:mozc))
@@ -145,6 +148,9 @@
 
 ;; not create backup file and not create auto save file
 (setq-default backup-inhibited t)
+
+;; auto revert
+(global-auto-revert-mode 1)
 
 ;; Disable menu bar
 (menu-bar-mode -1)
@@ -329,7 +335,7 @@
 ;;; Open Junk File
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'open-junk-file)
-(setq open-junk-file-format "~/junk/%Y/%m/%Y-%m-%d-%H%M%S.")
+(setq open-junk-file-format "~/junk/%Y/%m/%Y-%m-%d-%H%M.")
 (global-set-key (kbd "C-x z") 'open-junk-file)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -365,6 +371,8 @@
 ;;; Git
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-git-gutter-mode +1)
+
+(define-key ctl-x-map (kbd "g") 'magit-status)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C
