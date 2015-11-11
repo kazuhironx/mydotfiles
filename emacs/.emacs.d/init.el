@@ -57,6 +57,10 @@
 (el-get-bundle helm-gtags)
 (el-get-bundle helm-ag)
 
+;; sequential command
+(el-get-bundle sequential-command)
+(el-get-bundle sequential-command-config)
+
 ;; undo-tree
 (el-get-bundle undo-tree)
 
@@ -402,7 +406,6 @@
 
 (add-hook 'c-mode-hook 'my/c-mode-hook)
 (add-hook 'c++-mode-hook 'my/c++-mode-hook)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Global Key Binding
