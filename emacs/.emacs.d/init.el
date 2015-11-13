@@ -26,6 +26,9 @@
 (el-get-bundle elpa:spacemacs-theme
   (add-to-list 'custom-theme-load-path default-directory))
 
+;; expand-region
+(el-get-bundle expand-region)
+
 ;; dash
 (el-get-bundle dash)
 
@@ -186,16 +189,6 @@
 ;; invisible mouse cursor when editing text
 (setq-default make-pointer-invisible t)
 
-;; undo setting
-;(setq-default undo-no-redo t
-;              undo-limit 600000
-;              undo-strong-limit 900000)
-
-;;;; undo-tree
-;(global-undo-tree-mode)
-;(define-key undo-tree-map (kbd "C-/") 'undo-tree-undo)
-;(define-key undo-tree-map (kbd "M-_") 'nil)
-
 ;; fill-mode
 (setq-default fill-column 80)
 
@@ -260,16 +253,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; undo-tree
+;;;	"C-x u"でundo-tree
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'undo-tree)
 (global-undo-tree-mode t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Open Junk File
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'open-junk-file)
-(setq open-junk-file-format "~/junk/%Y/%m/%Y-%m-%d-%H%M%S.")
-(global-set-key (kbd "C-x z") 'open-junk-file)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helm
@@ -340,7 +327,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'open-junk-file)
 (setq open-junk-file-format "~/junk/%Y/%m/%Y-%m-%d-%H%M.")
-(global-set-key (kbd "C-x z") 'open-junk-file)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Auto Complete
@@ -376,17 +362,31 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-git-gutter-mode +1)
 
-(define-key ctl-x-map (kbd "g") 'magit-status)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Sequential-command
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'sequential-command)
+;; C-a連打で行頭、関数先頭、ページ先頭、元の位置...と移動
+(define-sequential-command my/cc-seq-home
+  beginning-of-line c-beginning-of-defun beginning-of-buffer seq-return)
+;; C-e連打で行末、関数終端、ページ終端、元の位置...と移動
+(define-sequential-command my/cc-seq-end
+  end-of-line c-end-of-defun end-of-buffer seq-return)
+
+(sequential-command-setup-keys)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (with-eval-after-load 'cc-mode
   (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-  (define-key c-mode-map (kbd "C-c c") 'compile)
+  (define-key c-mode-base-map (kbd "C-c c") 'compile)
+  (define-key c-mode-base-map (kbd "C-a") 'my/cc-seq-home)
+  (define-key c-mode-base-map (kbd "C-e") 'my/cc-seq-end)
   (require 'google-c-style))
 
-(defun my/cc-mode-hook ()
+;; c,c++,objective-cのhook
+(defun my/c-mode-common-hook ()
   (google-set-c-style)
   (google-make-newline-indent)
   (flycheck-mode)
@@ -397,13 +397,14 @@
   (c-toggle-auto-hungry-state 1)
   (c-toggle-electric-state -1))
 
-(defun my/c-mode-hook ()
-  (my/cc-mode-hook))
+;; cのhook
+(defun my/c-mode-hook ())
 
+;; c++のhook
 (defun my/c++-mode-hook ()
-  (my/cc-mode-hook)
   (setq flycheck-clang-language-standard "c++11"))
 
+(add-hook 'c-mode-common-hook 'my/c-mode-common-hook)
 (add-hook 'c-mode-hook 'my/c-mode-hook)
 (add-hook 'c++-mode-hook 'my/c++-mode-hook)
 
@@ -413,12 +414,13 @@
 (setq mac-command-modifier 'super)
 (setq mac-option-modifier 'meta)
 
+;; global map
 (keyboard-translate ?\C-h ?\C-?)  ; translate `C-h' to DEL
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
-
-;; global map
 (define-key global-map (kbd "C-o") 'dabbrev-expand)
+(define-key global-map (kbd "C-^") 'er/expand-region)
+(define-key global-map (kbd "C-M-^") 'er/contract-region)
 
 ;; ctl-x-map
 (defun my/close-all-buffers ()
@@ -427,3 +429,5 @@
 
 (define-key ctl-x-map (kbd "C-c") 'my/close-all-buffers)
 (define-key ctl-x-map (kbd "l") 'goto-line)
+(define-key ctl-x-map (kbd "g") 'magit-status)
+(define-key ctl-x-map (kbd "z") 'open-junk-file)
