@@ -47,6 +47,9 @@
 ;; magit
 (el-get-bundle magit)
 
+;; markdown-mode
+(el-get-bundle markdown-mode)
+
 ;; mozc
 (when (executable-find "mozc_emacs_helper")
   (el-get-bundle elpa:mozc))
@@ -67,20 +70,11 @@
 ;; undo-tree
 (el-get-bundle undo-tree)
 
+;; visual-regexp-steroids
+(el-get-bundle visual-regexp-steroids)
+
 ;; yasnippet
 (el-get-bundle yasnippet)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; IME
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-hook 'input-method-activate-hook
-	  (lambda () (set-cursor-color "gold")))
-(add-hook 'input-method-inactivate-hook
-	  (lambda () (set-cursor-color "chartreuse2")))
-
-(when (and (require 'mozc nil t) (executable-find "mozc_emacs_helper"))
-  (setq default-input-method "japanese-mozc")
-  (global-set-key (kbd "C-\\") 'toggle-input-method))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Basic Setting
@@ -192,6 +186,17 @@
 ;; fill-mode
 (setq-default fill-column 80)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; IME
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-hook 'input-method-activate-hook
+	  (lambda () (set-cursor-color "gold")))
+(add-hook 'input-method-inactivate-hook
+	  (lambda () (set-cursor-color "chartreuse2")))
+
+(when (and (require 'mozc nil t) (executable-find "mozc_emacs_helper"))
+  (setq default-input-method "japanese-mozc")
+  (global-set-key (kbd "C-\\") 'toggle-input-method))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Dired
@@ -212,9 +217,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Color Theme
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(load-theme 'spacemacs-dark t)
+;(load-theme 'spacemacs-dark t)
 ;(load-theme 'spacemacs-light t)
-;(load-theme 'hc-zenburn t)
+(load-theme 'hc-zenburn t)
 ;(enable-theme 'hc-zenburn t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -334,6 +339,12 @@
 (require 'auto-complete)
 (ac-config-default)
 
+(dolist (mode '(git-commit-mode
+		markdown-mode
+		gfm-mode
+		text-mode))
+  (add-to-list 'ac-modes mode))
+
 (custom-set-variables
  `(ac-dictionary-directories ,(concat user-emacs-directory "ac-dict"))
  '(ac-use-fuzzy t)
@@ -347,15 +358,17 @@
 (define-key ac-completing-map (kbd "<tab>") 'ac-complete)
 (define-key ac-completing-map (kbd "C-i") 'ac-complete)
 
+(global-set-key (kbd "C-M-i") 'auto-complete)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Auto Complete Clang Async
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'auto-complete-clang-async)
 (defun ac-cc-mode-setup ()
+  (setq ac-clang-cflags '("-std=c++11"))
   (setq ac-clang-complete-executable "/usr/local/bin/clang-complete")
   (setq ac-sources '(ac-source-clang-async))
-  (ac-clang-launch-completion-process)
-)
+  (ac-clang-launch-completion-process))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Git
@@ -376,14 +389,41 @@
 (sequential-command-setup-keys)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Visual-regexp-steroids
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'visual-regexp-steroids)
+(custom-set-variables
+ '(vr/engine 'python))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Markdown
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . gfm-mode))
+(add-to-list 'auto-mode-alist '("\\.txt\\'" . gfm-mode))
+(add-to-list 'auto-mode-alist '("\\.text\\'" . gfm-mode))
+
+(with-eval-after-load 'markdown-mode
+  (define-key markdown-mode-map (kbd "C-M-i") 'auto-complete)
+  (define-key markdown-mode-map (kbd "C-c C-c C-l") 'markdown-insert-link)
+  (define-key markdown-mode-map (kbd "C-c C-c C-i") 'markdown-insert-image)
+  (define-key gfm-mode-map (kbd "C-c C-c C-c") 'markdown-insert-gfm-code-block))
+
+(defun markdown-hook ()
+  (setq markdown-command-needs-filename t))
+(add-hook 'markdown-mode-hook 'markdown-hook)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; C
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (with-eval-after-load 'cc-mode
+  (require 'google-c-style)
+  (load "/usr/share/emacs/site-lisp/clang-format-3.4/clang-format.el")
   (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+  (define-key c-mode-base-map (kbd "M-o") 'clang-format-region)
   (define-key c-mode-base-map (kbd "C-c c") 'compile)
   (define-key c-mode-base-map (kbd "C-a") 'my/cc-seq-home)
-  (define-key c-mode-base-map (kbd "C-e") 'my/cc-seq-end)
-  (require 'google-c-style))
+  (define-key c-mode-base-map (kbd "C-e") 'my/cc-seq-end))
 
 ;; c,c++,objective-cのhook
 (defun my/c-mode-common-hook ()
@@ -421,13 +461,16 @@
 (define-key global-map (kbd "C-o") 'dabbrev-expand)
 (define-key global-map (kbd "C-^") 'er/expand-region)
 (define-key global-map (kbd "C-M-^") 'er/contract-region)
+(define-key global-map (kbd "M-%") 'vr/query-replace)
+(define-key global-map (kbd "C-M-r") 'vr/isearch-backward)
+(define-key global-map (kbd "C-M-s") 'vr/isearch-forward)
 
 ;; ctl-x-map
 (defun my/close-all-buffers ()
   (interactive)
   (mapc 'kill-buffer (buffer-list)))
 
-(define-key ctl-x-map (kbd "C-c") 'my/close-all-buffers)
-(define-key ctl-x-map (kbd "l") 'goto-line)
-(define-key ctl-x-map (kbd "g") 'magit-status)
-(define-key ctl-x-map (kbd "z") 'open-junk-file)
+(define-key ctl-x-map (kbd "C-c") 'my/close-all-buffers) ; C-x C-c
+(define-key ctl-x-map (kbd "l") 'goto-line)		 ; C-x l
+(define-key ctl-x-map (kbd "g") 'magit-status)		 ; C-x g
+(define-key ctl-x-map (kbd "z") 'open-junk-file)	 ; C-x z
