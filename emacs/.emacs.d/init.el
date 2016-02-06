@@ -12,11 +12,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Packages
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; auto-complete
-(el-get-bundle auto-complete/popup-el :name popup)
-(el-get-bundle auto-complete/fuzzy-el :name fuzzy)
-(el-get-bundle auto-complete/auto-complete)
-(el-get-bundle auto-complete-clang-async)
+;; color-theme : ample-them
+(el-get-bundle elpa:ample-theme
+  (add-to-list 'custom-theme-load-path default-directory))
 
 ;; color-theme : hc-zenburn
 (el-get-bundle elpa:hc-zenburn-theme
@@ -26,23 +24,30 @@
 (el-get-bundle elpa:spacemacs-theme
   (add-to-list 'custom-theme-load-path default-directory))
 
+;; company
+(el-get-bundle company-mode)
+(el-get-bundle company-irony)
+
 ;; expand-region
-(el-get-bundle expand-region)
+(el-get-bundle elpa:expand-region)
 
 ;; dash
-(el-get-bundle dash)
+(el-get-bundle elpa:dash)
 
 ;; fly-check
-(el-get-bundle flycheck/flycheck)
+(el-get-bundle flycheck)
 
 ;; fly-make
-(el-get-bundle flymake)
+(el-get-bundle elpa:flymake)
 
 ;; git-gutter
 (el-get-bundle git-gutter)
 
 ;; open-junk-file
 (el-get-bundle elpa:open-junk-file)
+
+;; power-line
+(el-get-bundle powerline)
 
 ;; magit
 (el-get-bundle magit)
@@ -54,8 +59,14 @@
 (when (executable-find "mozc_emacs_helper")
   (el-get-bundle elpa:mozc))
 
+;; multiple-cursr
+(el-get-bundle multiple-cursors)
+
 ;; google-coding-style
 (el-get-bundle elpa:google-c-style)
+
+;; google-translate
+(el-get-bundle google-translate)
 
 ;; helm
 (el-get-bundle helm)
@@ -63,15 +74,17 @@
 (el-get-bundle helm-gtags)
 (el-get-bundle helm-ag)
 
-;; sequential command
-(el-get-bundle sequential-command)
-(el-get-bundle sequential-command-config)
-
 ;; undo-tree
-(el-get-bundle undo-tree)
+(el-get-bundle elpa:undo-tree)
+
+;; use-package
+(el-get-bundle use-package)
 
 ;; visual-regexp-steroids
 (el-get-bundle visual-regexp-steroids)
+
+;; yaml
+(el-get-bundle yaml-mode)
 
 ;; yasnippet
 (el-get-bundle yasnippet)
@@ -82,7 +95,6 @@
 (require 'cl-lib)
 
 ;; encoding
-(set-language-environment "Japanese")
 (prefer-coding-system 'utf-8-unix)
 
 ;; basic customize variables
@@ -195,6 +207,7 @@
 	  (lambda () (set-cursor-color "chartreuse2")))
 
 (when (and (require 'mozc nil t) (executable-find "mozc_emacs_helper"))
+  (set-language-environment "Japanese")
   (setq default-input-method "japanese-mozc")
   (global-set-key (kbd "C-\\") 'toggle-input-method))
 
@@ -221,6 +234,7 @@
 ;(load-theme 'spacemacs-light t)
 (load-theme 'hc-zenburn t)
 ;(enable-theme 'hc-zenburn t)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fonts
@@ -279,12 +293,10 @@
 (with-eval-after-load 'helm
   (helm-descbinds-mode)
 
-  (define-key global-map (kbd "C-q") 'helm-mini)
   (define-key global-map (kbd "M-x") 'helm-M-x)
   (define-key global-map (kbd "C-x C-f") 'helm-find-files)
-  (define-key global-map (kbd "C-x C-r") 'helm-recentf)
   (define-key global-map (kbd "M-y") 'helm-show-kill-ring)
-  (define-key global-map (kbd "C-x b") 'helm-buffers-list)
+  (define-key global-map (kbd "C-x b") 'helm-mini)
 
   (define-key helm-map (kbd "C-p")   'helm-previous-line)
   (define-key helm-map (kbd "C-n")   'helm-next-line)
@@ -334,59 +346,9 @@
 (setq open-junk-file-format "~/junk/%Y/%m/%Y-%m-%d-%H%M.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Auto Complete
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'auto-complete)
-(ac-config-default)
-
-(dolist (mode '(git-commit-mode
-		markdown-mode
-		gfm-mode
-		text-mode))
-  (add-to-list 'ac-modes mode))
-
-(custom-set-variables
- `(ac-dictionary-directories ,(concat user-emacs-directory "ac-dict"))
- '(ac-use-fuzzy t)
- '(ac-auto-start nil)
- '(ac-use-menu-map t)
- '(ac-quick-help-delay 1.0))
-
-(define-key ac-complete-mode-map (kbd "C-n") 'ac-next)
-(define-key ac-complete-mode-map (kbd "C-p") 'ac-previous)
-(define-key ac-complete-mode-map (kbd "C-s") 'ac-isearch)
-(define-key ac-completing-map (kbd "<tab>") 'ac-complete)
-(define-key ac-completing-map (kbd "C-i") 'ac-complete)
-
-(global-set-key (kbd "C-M-i") 'auto-complete)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Auto Complete Clang Async
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'auto-complete-clang-async)
-(defun ac-cc-mode-setup ()
-  (setq ac-clang-cflags '("-std=c++11"))
-  (setq ac-clang-complete-executable "/usr/local/bin/clang-complete")
-  (setq ac-sources '(ac-source-clang-async))
-  (ac-clang-launch-completion-process))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Git
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-git-gutter-mode +1)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Sequential-command
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'sequential-command)
-;; C-a連打で行頭、関数先頭、ページ先頭、元の位置...と移動
-(define-sequential-command my/cc-seq-home
-  beginning-of-line c-beginning-of-defun beginning-of-buffer seq-return)
-;; C-e連打で行末、関数終端、ページ終端、元の位置...と移動
-(define-sequential-command my/cc-seq-end
-  end-of-line c-end-of-defun end-of-buffer seq-return)
-
-(sequential-command-setup-keys)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Visual-regexp-steroids
@@ -420,17 +382,14 @@
   (require 'google-c-style)
   (load "/usr/share/emacs/site-lisp/clang-format-3.4/clang-format.el")
   (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-  (define-key c-mode-base-map (kbd "M-o") 'clang-format-region)
-  (define-key c-mode-base-map (kbd "C-c c") 'compile)
-  (define-key c-mode-base-map (kbd "C-a") 'my/cc-seq-home)
-  (define-key c-mode-base-map (kbd "C-e") 'my/cc-seq-end))
+  (define-key c-mode-base-map (kbd "C-M-/") 'clang-format-region)
+  (define-key c-mode-base-map (kbd "C-c c") 'compile))
 
 ;; c,c++,objective-cのhook
 (defun my/c-mode-common-hook ()
   (google-set-c-style)
   (google-make-newline-indent)
   (flycheck-mode)
-  (ac-cc-mode-setup)
   (global-auto-complete-mode t)
   (helm-gtags-mode)
   (setq indent-tabs-mode nil)
@@ -459,8 +418,8 @@
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
 (define-key global-map (kbd "C-o") 'dabbrev-expand)
-(define-key global-map (kbd "C-^") 'er/expand-region)
-(define-key global-map (kbd "C-M-^") 'er/contract-region)
+(define-key global-map (kbd "C-M-o") 'er/expand-region)
+(define-key global-map (kbd "C-M-k") 'er/contract-region)
 (define-key global-map (kbd "M-%") 'vr/query-replace)
 (define-key global-map (kbd "C-M-r") 'vr/isearch-backward)
 (define-key global-map (kbd "C-M-s") 'vr/isearch-forward)
