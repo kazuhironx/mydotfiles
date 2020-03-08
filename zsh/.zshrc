@@ -1,6 +1,7 @@
-path=(/usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin)
+path=(/usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin $path)
 
-export LANG=ja_JP.UTF-8
+export GOPATH=$HOME/dev/go
+export LANG=en_us.UTF-8
 export TERM=xterm-256color
 export EDITOR=emacsclient
 
