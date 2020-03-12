@@ -1,4 +1,4 @@
-path=(/usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
+path=($HOME/dev/go/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
 
 export GOPATH=$HOME/dev/go
 export LANG=en_us.UTF-8
