@@ -91,16 +91,16 @@ zstyle ':vcs_info:*' actionformats '[%b|%a]'
 precmd () { vcs_info }
 RPROMPT=$RPROMPT'${vcs_info_msg_0_}'
 
-# alias
 # setup ls coloring
 local LIST_COLOR='di=34;1' 'ln=35' 'so=32' 'ex=32;1' 'bd=46;34' 'cd=43;34'
 zstyle ':completion:*' list-colors $LIST_COLOR
-alias ls='ls --color -F'
 if [ ! -e ~/.dir_colors ]; then
     dircolors -p > ~/.dir_colors
 fi
 eval `dircolors ~/.dir_colors -b`
 
+# alias
+alias ls='ls --color -F'
 alias ll='ls -la'
 alias df='df -h'
 alias grep='grep --color=auto'
@@ -109,4 +109,17 @@ alias g='git'
 alias s='git status'
 alias d='git diff '
 
-path=($HOME/bin $path)
+# for peco
+function peco-src() {
+    local selected_dir=$(ghq list | peco --query "$LBUFFER")
+    if [ -n "$selected_dir" ]; then
+        BUFFER="cd ${GOPATH}/src/${selected_dir}"
+        zle accept-line
+    fi
+    zle redisplay
+}
+zle -N peco-src
+bindkey '^s' peco-src
+
+alias -g G='`ghq list -p | peco`'
+alias -g B='`git branch | peco | sed -e "s/^\*[ ]*//g"`'
