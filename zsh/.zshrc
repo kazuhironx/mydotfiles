@@ -1,6 +1,6 @@
-path=($HOME/dev/go/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
+path=($HOME/dev/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
 
-export GOPATH=$HOME/dev/go
+export GOPATH=$HOME/dev
 export LANG=en_us.UTF-8
 export TERM=xterm-256color
 export EDITOR=emacsclient
