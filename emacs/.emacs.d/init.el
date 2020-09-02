@@ -1,435 +1,411 @@
-(when load-file-name
-  (setq user-emacs-directory (file-name-directory load-file-name)))
-
-(add-to-list 'load-path (locate-user-emacs-file "el-get/el-get"))
-(unless (require 'el-get nil 'noerror)
-  (with-current-buffer
-      (url-retrieve-synchronously
-       "https://raw.githubusercontent.com/dimitri/el-get/master/el-get-install.el")
-    (goto-char (point-max))
-    (eval-print-last-sexp)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Packages
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; color-theme : ample-them
-(el-get-bundle elpa:ample-theme
-  (add-to-list 'custom-theme-load-path default-directory))
-
-;; color-theme : hc-zenburn
-(el-get-bundle elpa:hc-zenburn-theme
-  (add-to-list 'custom-theme-load-path default-directory))
-
-;; color-theme : spacemacs-them
-(el-get-bundle elpa:spacemacs-theme
-  (add-to-list 'custom-theme-load-path default-directory))
-
-;; company
-(el-get-bundle company-mode)
-(el-get-bundle company-irony)
-
-;; expand-region
-(el-get-bundle elpa:expand-region)
-
-;; dash
-(el-get-bundle elpa:dash)
-
-;; fly-check
-(el-get-bundle flycheck)
-
-;; fly-make
-(el-get-bundle elpa:flymake)
-
-;; git-gutter
-(el-get-bundle git-gutter)
-
-;; open-junk-file
-(el-get-bundle elpa:open-junk-file)
-
-;; power-line
-(el-get-bundle powerline)
-
-;; magit
-(el-get-bundle magit)
-
-;; markdown-mode
-(el-get-bundle markdown-mode)
-
-;; mozc
-(when (executable-find "mozc_emacs_helper")
-  (el-get-bundle elpa:mozc))
-
-;; multiple-cursr
-(el-get-bundle multiple-cursors)
-
-;; google-coding-style
-(el-get-bundle elpa:google-c-style)
-
-;; google-translate
-(el-get-bundle google-translate)
-
-;; helm
-(el-get-bundle helm)
-(el-get-bundle helm-descbinds)
-(el-get-bundle helm-gtags)
-(el-get-bundle helm-ag)
-
-;; undo-tree
-(el-get-bundle elpa:undo-tree)
-
-;; use-package
-(el-get-bundle use-package)
-
-;; visual-regexp-steroids
-(el-get-bundle visual-regexp-steroids)
-
-;; yaml
-(el-get-bundle yaml-mode)
-
-;; yasnippet
-(el-get-bundle yasnippet)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Basic Setting
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'cl-lib)
-
-;; encoding
-(prefer-coding-system 'utf-8-unix)
-
-;; basic customize variables
-(custom-set-variables
- '(auto-save-file-name-transforms (\` ((".*" (\, temporary-file-directory) t))))
- '(backup-directory-alist (\` ((".*" \, temporary-file-directory))))
- '(comment-style (quote multi-line))
- '(create-lockfiles nil)
- '(dabbrev-case-fold-search nil)
- '(delete-auto-save-files t)
- '(delete-selection-mode t)
- '(find-file-visit-truename t)
- '(imenu-auto-rescan t)
- '(inhibit-startup-screen t)
- '(large-file-warning-threshold (* 25 1024 1024))
- '(line-move-visual nil)
- '(mozc-candidate-style (quote echo-area))
- '(mozc-leim-title "[も]")
- '(package-enable-at-startup nil)
- '(read-file-name-completion-ignore-case t)
- '(set-mark-command-repeat-pop t))
-
-(setq-default horizontal-scroll-bar nil)
-
-;; Paren-mode
-(show-paren-mode 1)
-
-;; Coloring
-(global-font-lock-mode +1)
-
-;; Cursor
-(set-cursor-color "chartreuse2")
-(blink-cursor-mode t)
-
-;; GC Setting
-(setq-default gc-cons-threshold (* gc-cons-threshold 10))
-
-;; echo stroke
-(setq-default echo-keystrokes 0.1)
-
-;; emacsを終了するときはM-x exitで
-(defalias 'exit 'save-buffers-kill-emacs)
-
-;; リージョンの大文字小文字変換
-;; C-x C-u で大文字に
-;; C-x C-l で小文字に
-(put 'upcase-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
-
-;; info for japanese
-(auto-compression-mode t)
-
-;; highlight mark region
-(transient-mark-mode +1)
-
-;; indicate last line
-(setq-default indicate-empty-lines t
-              indicate-buffer-boundaries 'right)
-
-;; Disable default scroll bar and tool bar
-(when window-system
-  (set-scroll-bar-mode 'nil)
-  (tool-bar-mode 0))
-
-;; not create backup file and not create auto save file
-(setq-default backup-inhibited t)
-
-;; auto revert
-(global-auto-revert-mode 1)
-
-;; Disable menu bar
-(menu-bar-mode -1)
-
-;; not beep
-(setq-default ring-bell-function 'ignore)
-
-;; display line infomation
-(line-number-mode 1)
-(column-number-mode 1)
-
-;; yes-or-no-p
-(defalias 'yes-or-no-p 'y-or-n-p)
-(setq-default use-dialog-box nil)
-
-;; history
-(setq-default history-length 500
-              history-delete-duplicates t)
-
-;; run server
-(require 'server)
-(unless (server-running-p)
-  (server-start))
-
-;; which-func
-(which-function-mode +1)
-(setq-default which-func-unknown "")
-
-;; invisible mouse cursor when editing text
-(setq-default make-pointer-invisible t)
-
-;; fill-mode
-(setq-default fill-column 80)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; IME
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-hook 'input-method-activate-hook
-	  (lambda () (set-cursor-color "gold")))
-(add-hook 'input-method-inactivate-hook
-	  (lambda () (set-cursor-color "chartreuse2")))
-
-(when (and (require 'mozc nil t) (executable-find "mozc_emacs_helper"))
-  (set-language-environment "Japanese")
-  (setq default-input-method "japanese-mozc")
-  (global-set-key (kbd "C-\\") 'toggle-input-method))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Dired
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(with-eval-after-load 'dired
-  (put 'dired-find-alternate-file 'disabled nil)
-  (define-key dired-mode-map (kbd "C-M-u") 'dired-up-directory)
-  (define-key dired-mode-map "r" 'wdired-change-to-wdired-mode))
-
-(custom-set-variables
- '(dired-listing-switches "-aFlh -nogo --time-style=iso")
- '(dired-dwim-target t)
- '(dired-auto-revert-buffer t)
- '(dired-isearch-filenames t)
- '(dired-recursive-copies 'always)
- '(dired-recursive-deletes 'always))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Color Theme
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;(load-theme 'spacemacs-dark t)
-;(load-theme 'spacemacs-light t)
-(load-theme 'hc-zenburn t)
-;(enable-theme 'hc-zenburn t)
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Fonts
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(if (display-graphic-p)
-    (set-face-attribute 'default nil
-			:family "Ricty Diminished Discord"
-			:height 110))
-(if (display-graphic-p)
-    (set-fontset-font (frame-parameter nil 'font)
-		      'japanese-jisx0208
-		      (cons "Ricty Diminished Discord" "iso10646-1")))
-(if (display-graphic-p)
-    (set-fontset-font (frame-parameter nil 'font)
-		      'japanese-jisx0212
-		      (cons "Ricty Diminished Discord" "iso10646-1")))
-(if (display-graphic-p)
-    (set-fontset-font (frame-parameter nil 'font)
-		      'katakana-jisx0201
-		      (cons "Ricty Diminished Discord" "iso10646-1")))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Diff
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(with-eval-after-load 'diff-mode
-  (define-key diff-mode-map (kbd "C-M-n") 'diff-file-next)
-  (define-key diff-mode-map (kbd "C-M-p") 'diff-file-prev))
-
-;; ediff
-(custom-set-variables
- '(ediff-window-setup-function 'ediff-setup-windows-plain)
- '(ediff-split-window-function 'split-window-horizontally)
- '(ediff-diff-options "-twB"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; undo-tree
-;;;	"C-x u"でundo-tree
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'undo-tree)
-(global-undo-tree-mode t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Helm
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'helm-config)
-(require 'helm-descbinds)
-
-(custom-set-variables
- '(helm-input-delay 0)
- '(helm-input-idle-delay 0)
- '(helm-exit-idle-delay 0)
- '(helm-candidate-number-limit 100)
- '(helm-command-prefix-key nil))
-
-(with-eval-after-load 'helm
-  (helm-descbinds-mode)
-
-  (define-key global-map (kbd "M-x") 'helm-M-x)
-  (define-key global-map (kbd "C-x C-f") 'helm-find-files)
-  (define-key global-map (kbd "M-y") 'helm-show-kill-ring)
-  (define-key global-map (kbd "C-x b") 'helm-mini)
-
-  (define-key helm-map (kbd "C-p")   'helm-previous-line)
-  (define-key helm-map (kbd "C-n")   'helm-next-line)
-  (define-key helm-map (kbd "C-M-n") 'helm-next-source)
-  (define-key helm-map (kbd "C-M-p") 'helm-previous-source)
-  (define-key helm-map (kbd "C-h") 'delete-backward-char))
-
-;; helm faces
-(with-eval-after-load 'helm-files
-  (define-key helm-find-files-map (kbd "C-h") 'delete-backward-char)
-  (define-key helm-find-files-map (kbd "M-l") 'helm-find-files-down-last-level)
-  (define-key helm-find-files-map (kbd "TAB") 'helm-execute-persistent-action))
-
-(with-eval-after-load 'helm-read-file
-  (define-key helm-read-file-map (kbd "C-h") 'delete-backward-char)
-  (define-key helm-read-file-map (kbd "TAB") 'helm-execute-persistent-action))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; helm-gtags
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(custom-set-variables
- '(helm-gtags-path-style 'relative)
- '(helm-gtags-ignore-case t)
- '(helm-gtags-auto-update t))
-
-(with-eval-after-load 'helm-gtags
-  (define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-find-tag)
-  (define-key helm-gtags-mode-map (kbd "M-r") 'helm-gtags-find-rtag)
-  (define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-find-symbol)
-  (define-key helm-gtags-mode-map (kbd "M-g M-p") 'helm-gtags-parse-file)
-  (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
-  (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
-  (define-key helm-gtags-mode-map (kbd "M-*") 'helm-gtags-pop-stack))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; helm-ag
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq helm-ag-things-at-point 'symbol)
-(global-set-key (kbd "M-g g") 'helm-ag)
-(global-set-key (kbd "M-g *") 'helm-ag-pop-stack)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Open Junk File
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'open-junk-file)
-(setq open-junk-file-format "~/junk/%Y/%m/%Y-%m-%d-%H%M.")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Git
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-git-gutter-mode +1)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Visual-regexp-steroids
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require 'visual-regexp-steroids)
-(custom-set-variables
- '(vr/engine 'python))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Markdown
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . gfm-mode))
-(add-to-list 'auto-mode-alist '("\\.txt\\'" . gfm-mode))
-(add-to-list 'auto-mode-alist '("\\.text\\'" . gfm-mode))
-
-(with-eval-after-load 'markdown-mode
-  (define-key markdown-mode-map (kbd "C-M-i") 'auto-complete)
-  (define-key markdown-mode-map (kbd "C-c C-c C-l") 'markdown-insert-link)
-  (define-key markdown-mode-map (kbd "C-c C-c C-i") 'markdown-insert-image)
-  (define-key gfm-mode-map (kbd "C-c C-c C-c") 'markdown-insert-gfm-code-block))
-
-(defun markdown-hook ()
-  (setq markdown-command-needs-filename t))
-(add-hook 'markdown-mode-hook 'markdown-hook)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; C
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(with-eval-after-load 'cc-mode
-  (require 'google-c-style)
-  (load "/usr/share/emacs/site-lisp/clang-format-3.4/clang-format.el")
-  (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-  (define-key c-mode-base-map (kbd "C-M-/") 'clang-format-region)
-  (define-key c-mode-base-map (kbd "C-c c") 'compile))
-
-;; c,c++,objective-cのhook
-(defun my/c-mode-common-hook ()
-  (google-set-c-style)
-  (google-make-newline-indent)
-  (flycheck-mode)
-  (global-auto-complete-mode t)
-  (helm-gtags-mode)
-  (setq indent-tabs-mode nil)
-  (c-toggle-auto-hungry-state 1)
-  (c-toggle-electric-state -1))
-
-;; cのhook
-(defun my/c-mode-hook ())
-
-;; c++のhook
-(defun my/c++-mode-hook ()
-  (setq flycheck-clang-language-standard "c++11"))
-
-(add-hook 'c-mode-common-hook 'my/c-mode-common-hook)
-(add-hook 'c-mode-hook 'my/c-mode-hook)
-(add-hook 'c++-mode-hook 'my/c++-mode-hook)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Global Key Binding
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq mac-command-modifier 'super)
-(setq mac-option-modifier 'meta)
-
-;; global map
-(keyboard-translate ?\C-h ?\C-?)  ; translate `C-h' to DEL
-(global-unset-key (kbd "C-z"))
-(global-unset-key (kbd "C-x C-z"))
-(define-key global-map (kbd "C-o") 'dabbrev-expand)
-(define-key global-map (kbd "C-M-o") 'er/expand-region)
-(define-key global-map (kbd "C-M-k") 'er/contract-region)
-(define-key global-map (kbd "M-%") 'vr/query-replace)
-(define-key global-map (kbd "C-M-r") 'vr/isearch-backward)
-(define-key global-map (kbd "C-M-s") 'vr/isearch-forward)
-
-;; ctl-x-map
-(defun my/close-all-buffers ()
-  (interactive)
-  (mapc 'kill-buffer (buffer-list)))
-
-(define-key ctl-x-map (kbd "C-c") 'my/close-all-buffers) ; C-x C-c
-(define-key ctl-x-map (kbd "l") 'goto-line)		 ; C-x l
-(define-key ctl-x-map (kbd "g") 'magit-status)		 ; C-x g
-(define-key ctl-x-map (kbd "z") 'open-junk-file)	 ; C-x z
+;;; init.el --- "GNU Emacs" main config file -*- mode: Emacs-Lisp; coding: utf-8-unix; lexical-binding: t; -*-
+
+(eval-and-compile
+  (customize-set-variable
+   'package-archives '(("org" . "https://orgmode.org/elpa/")
+		       ("melpa" . "https://melpa.org/packages/")
+		       ("gnu" . "https://elpa.gnu.org/packages/")))
+  (package-initialize)
+  (unless (package-installed-p 'leaf)
+    (package-refresh-contents)
+    (package-install 'leaf))
+
+  (leaf leaf-keywords
+    :ensure t
+    :init
+    ;; optional packages if you want to use :hydra, :el-get, :blackout,,,
+    (leaf hydra :ensure t)
+    (leaf el-get :ensure t)
+    (leaf blackout :ensure t)
+
+    :config
+    ;; initialize leaf-keywords.el
+    (leaf-keywords-init)))
+
+(leaf leaf-tree :ensure t)
+(leaf leaf-convert :ensure t)
+(leaf transient-dwim :ensure t)
+(leaf cus-edit
+  :doc "tools for customizing Emacs and Lisp packages"
+  :tag "builtin" "faces" "help"
+  :custom `((custom-file . ,(locate-user-emacs-file "custom.el"))))
+
+(leaf cus-start
+  :doc "define customization properties of builtins"
+  :tag "builtin" "internal"
+  :custom '((prefer-coding-system . 'utf-8-unix)
+            (truncate-lines . t)
+            (create-lockfiles . nil)
+            (debug-on-error . nil)
+            (init-file-debug . t)
+            (frame-resize-pixelwise . t)
+            (enable-recursive-minibuffers . t)
+            (history-length . 1000)
+            (history-delete-duplicates . t)
+            (scroll-preserve-screen-position . t)
+            (scroll-conservatively . 100)
+            (mouse-wheel-scroll-amount . '(1 ((control) . 5)))
+            (ring-bell-function . 'ignore)
+            (text-quoting-style . 'straight)
+            (truncate-lines . t)
+            (use-dialog-box . nil)
+            (use-file-dialog . nil)
+            (menu-bar-mode . nil)
+            (tool-bar-mode . nil)
+            (scroll-bar-mode . nil)
+            (horizontal-scroll-bar . nil)
+            (indent-tabs-mode . nil)
+            (line-number-mode . nil)
+            (column-number-mode . nil)
+            (indent-tabs-mode . nil)
+            (which-function-mode . t)
+            (which-func-unknown . "")
+            (global-display-line-numbers-mode . t)
+            (global-font-lock-mode . t)
+            (echo-keystrokes . 0.1)
+            (indicate-empty-lines . t)
+            (indicate-buffer-boundaries . 'right)
+            (make-pointer-invisible . t)
+            `(gc-cons-threshold . ,(* gc-cons-threshold 10)))
+  :config
+  (defalias 'yes-or-no-p 'y-or-n-p)
+  (keyboard-translate ?\C-h ?\C-?))
+
+(eval-and-compile
+  (leaf bytecomp
+    :doc "compilation of Lisp code into byte code"
+    :tag "builtin" "lisp"
+    :custom (byte-compile-warnings . '(cl-functions))))
+
+(leaf autorevert
+  :doc "revert buffers when files on disk change"
+  :tag "builtin"
+  :custom ((auto-revert-interval . 0.3)
+           (auto-revert-check-vc-info . t))
+  :global-minor-mode global-auto-revert-mode)
+
+(leaf delsel
+  :doc "delete selection if you insert"
+  :tag "builtin"
+  :global-minor-mode delete-selection-mode)
+
+(leaf paren
+  :doc "highlight matching paren"
+  :tag "builtin"
+  :custom ((show-paren-delay . 0.1))
+  :global-minor-mode show-paren-mode)
+
+(leaf simple
+  :doc "basic editing commands for Emacs"
+  :tag "builtin" "internal"
+  :custom ((kill-ring-max . 100)
+           (kill-read-only-ok . t)
+           (kill-whole-line . t)
+           (eval-expression-print-length . nil)
+           (eval-expression-print-level . nil)))
+
+(leaf files
+  :doc "file input and output commands for Emacs"
+  :tag "builtin"
+  :custom `((auto-save-timeout . 15)
+            (auto-save-interval . 60)
+            (auto-save-file-name-transforms . '((".*" ,(locate-user-emacs-file "backup/") t)))
+            (backup-directory-alist . '((".*" . ,(locate-user-emacs-file "backup"))
+                                        (,tramp-file-name-regexp . nil)))
+            (version-control . t)
+            (delete-old-versions . t)))
+
+(leaf startup
+  :doc "process Emacs shell arguments"
+  :tag "builtin" "internal"
+  :custom `((auto-save-list-file-prefix . ,(locate-user-emacs-file "backup/.saves-"))))
+
+(leaf ivy
+  :doc "Incremental Vertical completYon"
+  :req "emacs-24.5"
+  :tag "matching" "emacs>=24.5"
+  :url "https://github.com/abo-abo/swiper"
+  :emacs>= 24.5
+  :ensure t
+  :blackout t
+  :leaf-defer nil
+  :custom ((ivy-initial-inputs-alist . nil)
+           (ivy-re-builders-alist . '((t . ivy--regex-fuzzy)
+                                      (swiper . ivy--regex-plus)))
+           (ivy-use-selectable-prompt . t))
+  :global-minor-mode t
+  :config
+  (leaf swiper
+    :doc "Isearch with an overview. Oh, man!"
+    :req "emacs-24.5" "ivy-0.13.0"
+    :tag "matching" "emacs>=24.5"
+    :url "https://github.com/abo-abo/swiper"
+    :emacs>= 24.5
+    :ensure t
+    :bind (("C-s" . swiper)))
+
+  (leaf counsel
+    :doc "Various completion functions using Ivy"
+    :req "emacs-24.5" "swiper-0.13.0"
+    :tag "tools" "matching" "convenience" "emacs>=24.5"
+    :url "https://github.com/abo-abo/swiper"
+    :emacs>= 24.5
+    :ensure t
+    :blackout t
+    :bind (("C-x C-i" . counsel-imenu)
+           ("C-x C-r" . counsel-recentf)
+           ("C-c r" . ivy-resume)
+           (ivy-minibuffer-map
+            ("M-y" . ivy-next-line)))
+    :custom `((counsel-yank-pop-separator . "\n----------\n")
+              (counsel-find-file-ignore-regexp . ,(rx-to-string '(or "./" "../") 'no-group))
+              (counsel-yank-pop-after-point . t))
+    :global-minor-mode t))
+
+(leaf ivy-rich
+  :doc "More friendly display transformer for ivy."
+  :req "emacs-24.5" "ivy-0.8.0"
+  :tag "ivy" "emacs>=24.5"
+  :emacs>= 24.5
+  :ensure t
+  :after ivy
+  :global-minor-mode t)
+
+(leaf prescient
+  :doc "Better sorting and filtering"
+  :req "emacs-25.1"
+  :tag "extensions" "emacs>=25.1"
+  :url "https://github.com/raxod502/prescient.el"
+  :emacs>= 25.1
+  :ensure t
+  :commands (prescient-persist-mode)
+  :custom `((prescient-aggressive-file-save . t)
+            (prescient-save-file . ,(locate-user-emacs-file "prescient")))
+  :global-minor-mode prescient-persist-mode)
+
+(leaf ivy-prescient
+  :doc "prescient.el + Ivy"
+  :req "emacs-25.1" "prescient-4.0" "ivy-0.11.0"
+  :tag "extensions" "emacs>=25.1"
+  :url "https://github.com/raxod502/prescient.el"
+  :emacs>= 25.1
+  :ensure t
+  :after prescient ivy
+  :custom ((ivy-prescient-retain-classic-highlighting . t))
+  :global-minor-mode t)
+
+(leaf doom-themes
+  :doc "an opinionated pack of modern color-themes"
+  :req "emacs-25.1" "cl-lib-0.5"
+  :tag "nova" "faces" "icons" "neotree" "theme" "one" "atom" "blue" "light" "dark" "emacs>=25.1"
+  :added "2020-08-29"
+  :url "https://github.com/hlissner/emacs-doom-theme"
+  :emacs>= 25.1
+  :ensure t
+  :custom
+  ((doom-themes-enable-bold . t)
+   (doom-themes-enable-italic . t))
+  :config
+  (load-theme 'doom-dark+ t))
+
+(leaf doom-modeline
+  :doc "A minimal and modern mode-line"
+  :req "emacs-25.1" "all-the-icons-2.2.0" "shrink-path-0.2.0" "dash-2.11.0"
+  :tag "mode-line" "faces" "emacs>=25.1"
+  :added "2020-08-29"
+  :url "https://github.com/seagle0128/doom-modeline"
+  :emacs>= 25.1
+  :ensure t
+  :hook ((after-init-hook . doom-modeline-mode))
+  :custom
+  ((doom-modeline-buffer-file-name-style . 'truncate-with-project)))
+   
+(leaf anzu
+  :doc "Show number of matches in mode-line while searching"
+  :req "emacs-24.3"
+  :tag "emacs>=24.3"
+  :added "2020-08-29"
+  :url "https://github.com/emacsorphanage/anzu"
+  :emacs>= 24.3
+  :ensure t
+  :global-minor-mode global-anzu-mode)
+
+(leaf nyan-mode
+  :doc "Nyan Cat shows position in current buffer in mode-line."
+  :tag "build something amazing" "pop tart cat" "scrolling" "lulz" "cat" "nyan"
+  :added "2020-08-29"
+  :url "https://github.com/TeMPOraL/nyan-mode/"
+  :ensure t
+  :hook ((after-init-hook . nyan-mode)))
+
+(leaf visual-regexp-steroids
+  :doc "Extends visual-regexp to support other regexp engines"
+  :req "visual-regexp-1.1"
+  :tag "feedback" "visual" "python" "replace" "regexp" "foreign" "external"
+  :added "2020-08-29"
+  :url "https://github.com/benma/visual-regexp-steroids.el/"
+  :ensure t
+  :bind
+  (("M-%" . vr/query-replace)
+   ("C-M-r" . vr/isearch-backward)
+   ("C-M-s" . vr/isearch-forward))
+  :custom
+  (vr/engin . 'python))
+
+(leaf multiple-cursors
+  :doc "Multiple cursors for Emacs."
+  :req "cl-lib-0.5"
+  :added "2020-08-29"
+  :ensure t
+  :bind (("C-c q" . kmz/hydra-multiple-cursors/body))
+  :config
+  :hydra (kmz/hydra-multiple-cursors
+          (:color pink :hint nil)
+          "
+                                               ╔════════╗
+    Point^^           Misc^^                       ║ Cursor ║
+  ─────────────────────────────────────────────╨────────╜
+     _p_    _P_
+     ^↑^^    ^↑^     [_i_] numbers
+    mark^^^ skip^^   [_a_] letters
+     ^↓^^    ^↓^     [_s_] sort
+     _n_    _N_ 
+  ╭──────────────────────────────────────────────────────╯
+               [_q_]: quit, [Click]: point
+"
+          ("n" mc/mark-next-like-this)
+          ("N" mc/skip-to-next-like-this)
+          ("p" mc/mark-previous-like-this)
+          ("P" mc/skip-to-previous-like-this)
+          ("s" mc/mark-all-in-region-regexp :exit t)
+          ("i" mc/insert-numbers :exit t)
+          ("a" mc/insert-letters :exit t)
+          ("<mouse-1>" mc/add-cursor-on-click)
+          ("q" nil)))
+
+
+(leaf undo-tree
+  :doc "Treat undo history as a tree"
+  :tag "tree" "history" "redo" "undo" "files" "convenience"
+  :added "2020-08-29"
+  :url "http://www.dr-qubit.org/emacs.php"
+  :ensure t
+  :global-minor-mode t)
+
+(leaf rainbow-mode
+  :doc "Colorize color names in buffers"
+  :tag "faces"
+  :added "2020-09-03"
+  :url "http://elpa.gnu.org/packages/rainbow-mode.html"
+  :ensure t
+  :hook (emacs-lisp-mode-hook . rainbow-mode))
+
+(leaf which-key
+  :doc "Display available keybindings in popup"
+  :req "emacs-24.4"
+  :tag "emacs>=24.4"
+  :added "2020-08-29"
+  :url "https://github.com/justbur/emacs-which-key"
+  :emacs>= 24.4
+  :ensure t)
+
+(leaf expand-region
+  :doc "Increase selected region by semantic units."
+  :added "2020-08-29"
+  :ensure t
+  :bind
+  (("C-c k" . er/expand-region))
+  :custom
+  ((expand-region-contract-fast-key . "j")))
+
+(leaf open-junk-file
+  :doc "Open a junk (memo) file to try-and-error"
+  :tag "tools" "convenience"
+  :added "2020-08-29"
+  :url "http://www.emacswiki.org/cgi-bin/wiki/download/open-junk-file.el"
+  :ensure t
+  :bind (("C-x z" . open-junk-file))
+  :custom
+  (open-junk-file-format . "~/junk/%Y/%m/%Y-%m-%d-%H%M."))
+
+(leaf git-gutter
+  :doc "Port of Sublime Text plugin GitGutter"
+  :req "emacs-24.3"
+  :tag "emacs>=24.3"
+  :added "2020-08-29"
+  :url "https://github.com/emacsorphanage/git-gutter"
+  :emacs>= 24.3
+  :ensure t
+  :global-minor-mode t)
+
+(leaf dumb-jump
+  :doc "Jump to definition for 40+ languages without configuration"
+  :req "emacs-24.3" "s-1.11.0" "dash-2.9.0" "popup-0.5.3"
+  :tag "programming" "emacs>=24.3"
+  :added "2020-09-03"
+  :url "https://github.com/jacktasia/dumb-jump"
+  :emacs>= 24.3
+  :ensure t
+  :custom ((dumb-jump-selector . 'ivy))
+  :config
+  (dumb-jump-mode))
+
+(leaf smart-jump
+  :doc "Smart go to definition."
+  :req "emacs-25.1" "dumb-jump-0.5.1"
+  :tag "tools" "emacs>=25.1"
+  :added "2020-09-03"
+  :url "https://github.com/jojojames/smart-jump"
+  :emacs>= 25.1
+  :ensure t
+  :after dumb-jump
+  :config (smart-jump-setup-default-registers))
+
+(leaf flycheck
+  :doc "On-the-fly syntax checking"
+  :req "dash-2.12.1" "pkg-info-0.4" "let-alist-1.0.4" "seq-1.11" "emacs-24.3"
+  :tag "minor-mode" "tools" "languages" "convenience" "emacs>=24.3"
+  :url "http://www.flycheck.org"
+  :emacs>= 24.3
+  :ensure t
+  :bind (("M-n" . flycheck-next-error)
+         ("M-p" . flycheck-previous-error))
+  :global-minor-mode global-flycheck-mode)
+
+(leaf company
+  :doc "Modular text completion framework"
+  :req "emacs-24.3"
+  :tag "matching" "convenience" "abbrev" "emacs>=24.3"
+  :url "http://company-mode.github.io/"
+  :emacs>= 24.3
+  :ensure t
+  :blackout t
+  :leaf-defer nil
+  :bind ((company-active-map
+          ("M-n" . nil)
+          ("M-p" . nil)
+          ("C-s" . company-filter-candidates)
+          ("C-n" . company-select-next)
+          ("C-p" . company-select-previous)
+          ("C-M-i" . company-complete-selection))
+         (company-search-map
+          ("C-n" . company-select-next)
+          ("C-p" . company-select-previous)))
+  :custom ((company-idle-delay . 0)
+           (company-minimum-prefix-length . 1)
+           (company-transformers . '(company-sort-by-occurrence)))
+  :global-minor-mode global-company-mode)
+
+(leaf company-c-headers
+  :doc "Company mode backend for C/C++ header files"
+  :req "emacs-24.1" "company-0.8"
+  :tag "company" "development" "emacs>=24.1"
+  :added "2020-03-25"
+  :emacs>= 24.1
+  :ensure t
+  :after company
+  :defvar company-backends
+  :config
+  (add-to-list 'company-backends 'company-c-headers))
+
+(provide 'init)
