@@ -346,7 +346,9 @@
   :url "https://github.com/jacktasia/dumb-jump"
   :emacs>= 24.3
   :ensure t
-  :custom ((dumb-jump-selector . 'ivy))
+  :init (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+  :custom ((dumb-jump-selector . 'ivy)
+           (dumb-jump-prefer-searcher . 'rg))
   :config
   (dumb-jump-mode))
 
@@ -409,3 +411,4 @@
   (add-to-list 'company-backends 'company-c-headers))
 
 (provide 'init)
+(put 'dired-find-alternate-file 'disabled nil)
