@@ -1,6 +1,5 @@
 path=($HOME/dev/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
 
-export GOPATH=$HOME/dev
 export LANG=en_us.UTF-8
 export TERM=xterm-256color
 export EDITOR=emacsclient
@@ -77,7 +76,6 @@ setopt nolistbeep
 # String behind '#' is comment.
 setopt interactive_comments
 
-
 # PROMPT
 RPROMPT="%{${fg[blue]}%}[%~]%{${reset_color}%}"
 
@@ -108,18 +106,6 @@ alias e='emacsclient'
 alias g='git'
 alias s='git status'
 alias d='git diff '
-
-# for peco
-function peco-src() {
-    local selected_dir=$(ghq list | peco --query "$LBUFFER")
-    if [ -n "$selected_dir" ]; then
-        BUFFER="cd ${GOPATH}/src/${selected_dir}"
-        zle accept-line
-    fi
-    zle redisplay
-}
-zle -N peco-src
-bindkey '^s' peco-src
 
 alias -g G='`ghq list -p | peco`'
 alias -g B='`git branch | peco | sed -e "s/^\*[ ]*//g"`'
