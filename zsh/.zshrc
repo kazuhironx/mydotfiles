@@ -1,5 +1,7 @@
 path=($HOME/dev/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
 
+source /etc/environment
+
 export LANG=en_us.UTF-8
 export TERM=xterm-256color
 export EDITOR=emacsclient
