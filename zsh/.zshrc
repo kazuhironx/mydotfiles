@@ -77,17 +77,17 @@ setopt nolistbeep
 setopt interactive_comments
 
 # PROMPT
-RPROMPT="%{${fg[blue]}%}[%~]%{${reset_color}%}"
+# RPROMPT="%{${fg[blue]}%}[%~]%{${reset_color}%}"
 
-autoload -Uz vcs_info
-setopt prompt_subst
-zstyle ':vcs_info:git:*' check-for-changes true
-zstyle ':vcs_info:git:*' stagedstr "%F{yellow}!"
-zstyle ':vcs_info:git:*' unstagedstr "%F{red}+"
-zstyle ':vcs_info:*' formats "%F{green}%c%u[%b]%f"
-zstyle ':vcs_info:*' actionformats '[%b|%a]'
-precmd () { vcs_info }
-RPROMPT=$RPROMPT'${vcs_info_msg_0_}'
+# autoload -Uz vcs_info
+# setopt prompt_subst
+# zstyle ':vcs_info:git:*' check-for-changes true
+# zstyle ':vcs_info:git:*' stagedstr "%F{yellow}!"
+# zstyle ':vcs_info:git:*' unstagedstr "%F{red}+"
+# zstyle ':vcs_info:*' formats "%F{green}%c%u[%b]%f"
+# zstyle ':vcs_info:*' actionformats '[%b|%a]'
+# precmd () { vcs_info }
+# RPROMPT=$RPROMPT'${vcs_info_msg_0_}'
 
 # setup ls coloring
 local LIST_COLOR='di=34;1' 'ln=35' 'so=32' 'ex=32;1' 'bd=46;34' 'cd=43;34'
@@ -109,3 +109,6 @@ alias d='git diff '
 
 alias -g G='`ghq list -p | peco`'
 alias -g B='`git branch | peco | sed -e "s/^\*[ ]*//g"`'
+
+# starship
+eval "$(starship init zsh)"
