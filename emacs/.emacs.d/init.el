@@ -98,7 +98,7 @@
 (leaf simple
   :doc "basic editing commands for Emacs"
   :tag "builtin" "internal"
-  :custom ((kill-ring-max . 100)
+  :custom ((kill-ring-max . 500)
            (kill-read-only-ok . t)
            (kill-whole-line . t)
            (eval-expression-print-length . nil)
@@ -120,79 +120,79 @@
   :tag "builtin" "internal"
   :custom `((auto-save-list-file-prefix . ,(locate-user-emacs-file "backup/.saves-"))))
 
-(leaf ivy
-  :doc "Incremental Vertical completYon"
-  :req "emacs-24.5"
-  :tag "matching" "emacs>=24.5"
-  :url "https://github.com/abo-abo/swiper"
-  :emacs>= 24.5
-  :ensure t
-  :blackout t
-  :leaf-defer nil
-  :custom ((ivy-initial-inputs-alist . nil)
-           (ivy-re-builders-alist . '((t . ivy--regex-fuzzy)
-                                      (swiper . ivy--regex-plus)))
-           (ivy-use-selectable-prompt . t))
-  :global-minor-mode t
-  :config
-  (leaf swiper
-    :doc "Isearch with an overview. Oh, man!"
-    :req "emacs-24.5" "ivy-0.13.0"
-    :tag "matching" "emacs>=24.5"
-    :url "https://github.com/abo-abo/swiper"
-    :emacs>= 24.5
-    :ensure t
-    :bind (("C-s" . swiper)))
+;; (leaf ivy
+;;   :doc "Incremental Vertical completYon"
+;;   :req "emacs-24.5"
+;;   :tag "matching" "emacs>=24.5"
+;;   :url "https://github.com/abo-abo/swiper"
+;;   :emacs>= 24.5
+;;   :ensure t
+;;   :blackout t
+;;   :leaf-defer nil
+;;   :custom ((ivy-initial-inputs-alist . nil)
+;;            (ivy-re-builders-alist . '((t . ivy--regex-fuzzy)
+;;                                       (swiper . ivy--regex-plus)))
+;;            (ivy-use-selectable-prompt . t))
+;;   :global-minor-mode t
+;;   :config
+;;   (leaf swiper
+;;     :doc "Isearch with an overview. Oh, man!"
+;;     :req "emacs-24.5" "ivy-0.13.0"
+;;     :tag "matching" "emacs>=24.5"
+;;     :url "https://github.com/abo-abo/swiper"
+;;     :emacs>= 24.5
+;;     :ensure t
+;;     :bind (("C-s" . swiper)))
 
-  (leaf counsel
-    :doc "Various completion functions using Ivy"
-    :req "emacs-24.5" "swiper-0.13.0"
-    :tag "tools" "matching" "convenience" "emacs>=24.5"
-    :url "https://github.com/abo-abo/swiper"
-    :emacs>= 24.5
-    :ensure t
-    :blackout t
-    :bind (("C-x C-i" . counsel-imenu)
-           ("C-x C-r" . counsel-recentf)
-           ("C-c r" . ivy-resume)
-           (ivy-minibuffer-map
-            ("M-y" . ivy-next-line)))
-    :custom `((counsel-yank-pop-separator . "\n----------\n")
-              (counsel-find-file-ignore-regexp . ,(rx-to-string '(or "./" "../") 'no-group))
-              (counsel-yank-pop-after-point . t))
-    :global-minor-mode t))
+;;   (leaf counsel
+;;     :doc "Various completion functions using Ivy"
+;;     :req "emacs-24.5" "swiper-0.13.0"
+;;     :tag "tools" "matching" "convenience" "emacs>=24.5"
+;;     :url "https://github.com/abo-abo/swiper"
+;;     :emacs>= 24.5
+;;     :ensure t
+;;     :blackout t
+;;     :bind (("C-x C-i" . counsel-imenu)
+;;            ("C-x C-r" . counsel-recentf)
+;;            ("C-c r" . ivy-resume)
+;;            (ivy-minibuffer-map
+;;             ("M-y" . ivy-next-line)))
+;;     :custom `((counsel-yank-pop-separator . "\n----------\n")
+;;               (counsel-find-file-ignore-regexp . ,(rx-to-string '(or "./" "../") 'no-group))
+;;               (counsel-yank-pop-after-point . t))
+;;     :global-minor-mode t))
 
-(leaf ivy-rich
-  :doc "More friendly display transformer for ivy."
-  :req "emacs-24.5" "ivy-0.8.0"
-  :tag "ivy" "emacs>=24.5"
-  :emacs>= 24.5
-  :ensure t
-  :after ivy
-  :global-minor-mode t)
+;(leaf ivy-rich
+;  :doc "More friendly display transformer for ivy."
+;  :req "emacs-24.5" "ivy-0.8.0"
+;  :tag "ivy" "emacs>=24.5"
+;  :emacs>= 24.5
+;  :ensure t
+;  :after ivy
+;  :global-minor-mode t)
 
-(leaf prescient
-  :doc "Better sorting and filtering"
-  :req "emacs-25.1"
-  :tag "extensions" "emacs>=25.1"
-  :url "https://github.com/raxod502/prescient.el"
-  :emacs>= 25.1
-  :ensure t
-  :commands (prescient-persist-mode)
-  :custom `((prescient-aggressive-file-save . t)
-            (prescient-save-file . ,(locate-user-emacs-file "prescient")))
-  :global-minor-mode prescient-persist-mode)
+;; (leaf prescient
+;;   :doc "Better sorting and filtering"
+;;   :req "emacs-25.1"
+;;   :tag "extensions" "emacs>=25.1"
+;;   :url "https://github.com/raxod502/prescient.el"
+;;   :emacs>= 25.1
+;;   :ensure t
+;;   :commands (prescient-persist-mode)
+;;   :custom `((prescient-aggressive-file-save . t)
+;;             (prescient-save-file . ,(locate-user-emacs-file "prescient")))
+;;   :global-minor-mode prescient-persist-mode)
 
-(leaf ivy-prescient
-  :doc "prescient.el + Ivy"
-  :req "emacs-25.1" "prescient-4.0" "ivy-0.11.0"
-  :tag "extensions" "emacs>=25.1"
-  :url "https://github.com/raxod502/prescient.el"
-  :emacs>= 25.1
-  :ensure t
-  :after prescient ivy
-  :custom ((ivy-prescient-retain-classic-highlighting . t))
-  :global-minor-mode t)
+;(leaf ivy-prescient
+;  :doc "prescient.el + Ivy"
+;  :req "emacs-25.1" "prescient-4.0" "ivy-0.11.0"
+;  :tag "extensions" "emacs>=25.1"
+;  :url "https://github.com/raxod502/prescient.el"
+;  :emacs>= 25.1
+;  :ensure t
+;  :after prescient ivy
+;  :custom ((ivy-prescient-retain-classic-highlighting . t))
+;  :global-minor-mode t)
 
 (leaf doom-themes
   :doc "an opinionated pack of modern color-themes"
@@ -338,77 +338,77 @@
   :ensure t
   :global-minor-mode t)
 
-(leaf dumb-jump
-  :doc "Jump to definition for 40+ languages without configuration"
-  :req "emacs-24.3" "s-1.11.0" "dash-2.9.0" "popup-0.5.3"
-  :tag "programming" "emacs>=24.3"
-  :added "2020-09-03"
-  :url "https://github.com/jacktasia/dumb-jump"
-  :emacs>= 24.3
-  :ensure t
-  :init (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
-  :custom ((dumb-jump-selector . 'ivy)
-           (dumb-jump-prefer-searcher . 'rg))
-  :config
-  (dumb-jump-mode))
+;; (leaf dumb-jump
+;;   :doc "Jump to definition for 40+ languages without configuration"
+;;   :req "emacs-24.3" "s-1.11.0" "dash-2.9.0" "popup-0.5.3"
+;;   :tag "programming" "emacs>=24.3"
+;;   :added "2020-09-03"
+;;   :url "https://github.com/jacktasia/dumb-jump"
+;;   :emacs>= 24.3
+;;   :ensure t
+;;   :init (add-hook 'xref-backend-functions #'dumb-jump-xref-activate)
+;;   :custom ((dumb-jump-selector . 'ivy)
+;;            (dumb-jump-prefer-searcher . 'rg))
+;;   :config
+;;   (dumb-jump-mode))
 
-(leaf smart-jump
-  :doc "Smart go to definition."
-  :req "emacs-25.1" "dumb-jump-0.5.1"
-  :tag "tools" "emacs>=25.1"
-  :added "2020-09-03"
-  :url "https://github.com/jojojames/smart-jump"
-  :emacs>= 25.1
-  :ensure t
-  :after dumb-jump
-  :config (smart-jump-setup-default-registers))
+;; (leaf smart-jump
+;;   :doc "Smart go to definition."
+;;   :req "emacs-25.1" "dumb-jump-0.5.1"
+;;   :tag "tools" "emacs>=25.1"
+;;   :added "2020-09-03"
+;;   :url "https://github.com/jojojames/smart-jump"
+;;   :emacs>= 25.1
+;;   :ensure t
+;;   :after dumb-jump
+;;   :config (smart-jump-setup-default-registers))
 
-(leaf flycheck
-  :doc "On-the-fly syntax checking"
-  :req "dash-2.12.1" "pkg-info-0.4" "let-alist-1.0.4" "seq-1.11" "emacs-24.3"
-  :tag "minor-mode" "tools" "languages" "convenience" "emacs>=24.3"
-  :url "http://www.flycheck.org"
-  :emacs>= 24.3
-  :ensure t
-  :bind (("M-n" . flycheck-next-error)
-         ("M-p" . flycheck-previous-error))
-  :global-minor-mode global-flycheck-mode)
+;; (leaf flycheck
+;;   :doc "On-the-fly syntax checking"
+;;   :req "dash-2.12.1" "pkg-info-0.4" "let-alist-1.0.4" "seq-1.11" "emacs-24.3"
+;;   :tag "minor-mode" "tools" "languages" "convenience" "emacs>=24.3"
+;;   :url "http://www.flycheck.org"
+;;   :emacs>= 24.3
+;;   :ensure t
+;;   :bind (("M-n" . flycheck-next-error)
+;;          ("M-p" . flycheck-previous-error))
+;;   :global-minor-mode global-flycheck-mode)
 
-(leaf company
-  :doc "Modular text completion framework"
-  :req "emacs-24.3"
-  :tag "matching" "convenience" "abbrev" "emacs>=24.3"
-  :url "http://company-mode.github.io/"
-  :emacs>= 24.3
-  :ensure t
-  :blackout t
-  :leaf-defer nil
-  :bind ((company-active-map
-          ("M-n" . nil)
-          ("M-p" . nil)
-          ("C-s" . company-filter-candidates)
-          ("C-n" . company-select-next)
-          ("C-p" . company-select-previous)
-          ("C-M-i" . company-complete-selection))
-         (company-search-map
-          ("C-n" . company-select-next)
-          ("C-p" . company-select-previous)))
-  :custom ((company-idle-delay . 0)
-           (company-minimum-prefix-length . 1)
-           (company-transformers . '(company-sort-by-occurrence)))
-  :global-minor-mode global-company-mode)
+;; (leaf company
+;;   :doc "Modular text completion framework"
+;;   :req "emacs-24.3"
+;;   :tag "matching" "convenience" "abbrev" "emacs>=24.3"
+;;   :url "http://company-mode.github.io/"
+;;   :emacs>= 24.3
+;;   :ensure t
+;;   :blackout t
+;;   :leaf-defer nil
+;;   :bind ((company-active-map
+;;           ("M-n" . nil)
+;;           ("M-p" . nil)
+;;           ("C-s" . company-filter-candidates)
+;;           ("C-n" . company-select-next)
+;;           ("C-p" . company-select-previous)
+;;           ("C-M-i" . company-complete-selection))
+;;          (company-search-map
+;;           ("C-n" . company-select-next)
+;;           ("C-p" . company-select-previous)))
+;;   :custom ((company-idle-delay . 0)
+;;            (company-minimum-prefix-length . 1)
+;;            (company-transformers . '(company-sort-by-occurrence)))
+;;   :global-minor-mode global-company-mode)
 
-(leaf company-c-headers
-  :doc "Company mode backend for C/C++ header files"
-  :req "emacs-24.1" "company-0.8"
-  :tag "company" "development" "emacs>=24.1"
-  :added "2020-03-25"
-  :emacs>= 24.1
-  :ensure t
-  :after company
-  :defvar company-backends
-  :config
-  (add-to-list 'company-backends 'company-c-headers))
+;; (leaf company-c-headers
+;;   :doc "Company mode backend for C/C++ header files"
+;;   :req "emacs-24.1" "company-0.8"
+;;   :tag "company" "development" "emacs>=24.1"
+;;   :added "2020-03-25"
+;;   :emacs>= 24.1
+;;   :ensure t
+;;   :after company
+;;   :defvar company-backends
+;;   :config
+;;   (add-to-list 'company-backends 'company-c-headers))
 
 (provide 'init)
 (put 'dired-find-alternate-file 'disabled nil)

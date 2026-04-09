@@ -1,8 +1,14 @@
-path=($HOME/dev/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
+path=($HOME/dev/bin $HOME/.local/bin $HOME/.cargo/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
+
+#asdf setup
+. "$HOME/.asdf/asdf.sh"
+fpath=(${ASDF_DIR}/completions $fpath)
+autoload -Uz compinit && compinit
 
 export LANG=en_US.utf8
+export LC_TIME=C
 export TERM=xterm-256color
-export EDITOR=emacsclient
+export EDITOR=emacs
 
 # emacs keybind
 bindkey -e
@@ -18,8 +24,8 @@ umask 022
 
 # History
 HISTFILE=~/.zsh_history
-HISTSIZE=10000
-SAVEHIST=10000
+HISTSIZE=100000
+SAVEHIST=100000
 setopt hist_ignore_all_dups
 setopt hist_ignore_dups
 setopt hist_ignore_space
@@ -76,18 +82,11 @@ setopt nolistbeep
 # String behind '#' is comment.
 setopt interactive_comments
 
-# PROMPT
-# RPROMPT="%{${fg[blue]}%}[%~]%{${reset_color}%}"
+# load bash_profile
+if [ -f ~/.bash_profile ]; then 
+    . ~/.bash_profile;
+fi
 
-# autoload -Uz vcs_info
-# setopt prompt_subst
-# zstyle ':vcs_info:git:*' check-for-changes true
-# zstyle ':vcs_info:git:*' stagedstr "%F{yellow}!"
-# zstyle ':vcs_info:git:*' unstagedstr "%F{red}+"
-# zstyle ':vcs_info:*' formats "%F{green}%c%u[%b]%f"
-# zstyle ':vcs_info:*' actionformats '[%b|%a]'
-# precmd () { vcs_info }
-# RPROMPT=$RPROMPT'${vcs_info_msg_0_}'
 
 # setup ls coloring
 local LIST_COLOR='di=34;1' 'ln=35' 'so=32' 'ex=32;1' 'bd=46;34' 'cd=43;34'
