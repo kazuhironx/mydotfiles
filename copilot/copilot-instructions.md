@@ -1,9 +1,17 @@
-# Copilot CLI Instructions
+# Copilot Instructions (Global Default)
 
-## Notifications
+This file is the fallback instruction set used when a project does not have its own `copilot-instructions.md`.
 
-When starting a long-running operation (build, test, install, etc.) that requires the user to wait:
-1. Tell the user to wait (e.g. "⏳ ビルド中です、お待ちください...")
-2. After the operation completes, send a tmux bell notification by running: `printf '\a'`
+## Language
 
-This allows the user to see a notification in the tmux status bar when the task is done.
+- 回答は日本語で行うこと
+
+## Coding Style
+
+- Google Coding Standard に従うこと
+- 主な使用言語: C++
+
+## Commit Messages
+
+- 1行目は簡潔に英語で書くこと
+- 必要に応じて2行目以降に詳細を記載する
