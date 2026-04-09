@@ -1,0 +1,23 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "type": "command",
+        "bash": "/home/a000175/.copilot/scripts/tmux-spinner-start.sh"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "bash": "/home/a000175/.copilot/scripts/tmux-spinner-stop.sh",
+        "matcher": "ask_user"
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "bash": "/home/a000175/.copilot/scripts/tmux-spinner-stop.sh"
+      }
+    ]
+  }
+}
