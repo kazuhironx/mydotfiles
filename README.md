@@ -8,7 +8,7 @@
 |---|---|
 | `zsh/.zshrc` | Zsh 設定 |
 | `tmux/.tmux.conf` | tmux 設定 |
-| `emacs/.emacs.d/` | Emacs 設定 (`init.el` など) |
+| `emacs/init.el` | Emacs 設定 |
 | `copilot/` | GitHub Copilot CLI 設定 (skills, hooks, scripts) |
 
 ## インストール
@@ -30,8 +30,8 @@ ln -sf ~/dotfiles/zsh/.zshrc ~/.zshrc
 # tmux
 ln -sf ~/dotfiles/tmux/.tmux.conf ~/.tmux.conf
 
-# Emacs (init.el のみリンク)
-ln -sf ~/dotfiles/emacs/.emacs.d/init.el ~/.emacs.d/init.el
+# Emacs
+ln -sf ~/dotfiles/emacs/init.el ~/.emacs.d/init.el
 
 # GitHub Copilot CLI (グローバル設定)
 ln -sf ~/dotfiles/copilot ~/.config/github-copilot/
