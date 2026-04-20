@@ -1,5 +1,11 @@
 path=($HOME/dev/bin $HOME/.local/bin $HOME/.cargo/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
 
+eval "$(git gtr completion zsh)"
+
+_gtr_init="${XDG_CACHE_HOME:-$HOME/.cache}/gtr/init-gtr.zsh"
+[[ -f "$_gtr_init" ]] || eval "$(git gtr init zsh)" || true
+source "$_gtr_init" 2>/dev/null || true; unset _gtr_init
+
 #asdf setup
 . "$HOME/.asdf/asdf.sh"
 fpath=(${ASDF_DIR}/completions $fpath)
@@ -101,13 +107,11 @@ alias ls='ls --color -F'
 alias ll='ls -la'
 alias df='df -h'
 alias grep='grep --color=auto'
-alias e='emacsclient'
-alias g='git'
-alias s='git status'
-alias d='git diff '
-
-alias -g G='`ghq list -p | peco`'
-alias -g B='`git branch | peco | sed -e "s/^\*[ ]*//g"`'
+alias copilot='copilot \
+     --allow-all-tools \
+     --deny-tool="shell(git push)" \
+     --deny-tool="shell(git push:*)" \
+     --deny-tool="shell(rm)"'
 
 # starship
 eval "$(starship init zsh)"

@@ -30,8 +30,8 @@ ln -sf ~/dotfiles/zsh/.zshrc ~/.zshrc
 # tmux
 ln -sf ~/dotfiles/tmux/.tmux.conf ~/.tmux.conf
 
-# Emacs
-ln -sf ~/dotfiles/emacs/.emacs.d ~/.emacs.d
+# Emacs (init.el のみリンク)
+ln -sf ~/dotfiles/emacs/.emacs.d/init.el ~/.emacs.d/init.el
 
 # GitHub Copilot CLI (グローバル設定)
 ln -sf ~/dotfiles/copilot ~/.config/github-copilot/
