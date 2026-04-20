@@ -81,11 +81,14 @@
 (use-package pcre2el)
 
 (use-package multiple-cursors
-  :bind (("C-c m" . mc/mark-more-like-this-extended)
+  :bind (("C-c m n" . mc/mark-more-like-this-extended)
          ("C-c m l" . mc/edit-lines))
   :config
   (define-key mc/mark-more-like-this-extended-keymap (kbd "n") #'mc/mmlte--down)
-  (define-key mc/mark-more-like-this-extended-keymap (kbd "p") #'mc/mmlte--up))
+  (define-key mc/mark-more-like-this-extended-keymap (kbd "p") #'mc/mmlte--up)
+  (add-to-list 'mc/cmds-to-run-once 'mc/mmlte--down)
+  (add-to-list 'mc/cmds-to-run-once 'mc/mmlte--up)
+  (add-to-list 'mc/cmds-to-run-once 'mc/mark-more-like-this-extended))
 
 (use-package repeat
   :ensure nil
