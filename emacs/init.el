@@ -86,9 +86,12 @@
          ("C-c m l" . mc/edit-lines))
   :config
   (defvar-keymap mc/mark-repeat-map
-    :repeat (:enter (mc/mark-next-like-this mc/unmark-next-like-this))
     "n" #'mc/mark-next-like-this
-    "p" #'mc/unmark-next-like-this))
+    "p" #'mc/unmark-next-like-this)
+  (dolist (cmd '(mc/mark-next-like-this mc/unmark-next-like-this))
+    (advice-add cmd :after
+                (lambda (&rest _)
+                  (set-transient-map mc/mark-repeat-map t)))))
 
 (use-package repeat
   :ensure nil
