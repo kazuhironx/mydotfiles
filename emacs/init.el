@@ -80,6 +80,12 @@
 
 (use-package pcre2el)
 
+(use-package multiple-cursors
+  :bind (("C-c m l" . mc/edit-lines)
+         ("C-c m a" . mc/mark-all-like-this)
+         ("C-c m n" . mc/mark-next-like-this)
+         ("C-c m p" . mc/mark-previous-like-this)))
+
 (use-package files
   :ensure nil
   :custom
