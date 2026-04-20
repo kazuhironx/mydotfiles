@@ -58,7 +58,44 @@ M-x treesit-install-language-grammar RET c
 M-x treesit-install-language-grammar RET cpp
 M-x treesit-install-language-grammar RET go
 M-x treesit-install-language-grammar RET rust
+M-x treesit-install-language-grammar RET yaml
+M-x treesit-install-language-grammar RET json
 ```
+
+### 5. Emacs 30.2 のビルド (Ubuntu 22.04)
+
+ソースからビルドする場合の手順です。native-comp / GTK3 / GnuTLS / Tree-sitter を有効にしています。
+
+```bash
+# 依存パッケージ (主なもの)
+sudo apt install build-essential texinfo libgtk-3-dev libgnutls28-dev \
+  libjansson-dev libtree-sitter-dev libgccjit-12-dev gcc-12 g++-12
+
+# ソース取得
+git clone --depth 1 -b emacs-30.2 https://github.com/emacs-mirror/emacs.git
+cd emacs
+
+# configure (libgccjit が標準パスにない場合は LIBRARY_PATH / C_INCLUDE_PATH を指定)
+export CC=gcc-12
+export CFLAGS="-O1 -g"
+export LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/12
+export C_INCLUDE_PATH=/usr/lib/gcc/x86_64-linux-gnu/12/include
+
+./autogen.sh
+./configure \
+  --with-native-compilation \
+  --with-gnutls \
+  --with-x-toolkit=gtk3 \
+  --with-tree-sitter \
+  --with-imagemagick \
+  --with-json \
+  --with-modules
+
+make -j$(nproc)
+sudo make install
+```
+
+> **Note:** GCC 12 の `-O2` は `xdisp.c` の native-comp 中にICE (Internal Compiler Error) を起こすことがあるため、`-O1` を使用しています。
 
 ## ライセンス
 

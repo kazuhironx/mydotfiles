@@ -108,10 +108,12 @@
           (cpp    "https://github.com/tree-sitter/tree-sitter-cpp")
           (go     "https://github.com/tree-sitter/tree-sitter-go")
           (gomod  "https://github.com/AZMCode/tree-sitter-go-mod")
-          (rust   "https://github.com/tree-sitter/tree-sitter-rust"))))
+          (rust   "https://github.com/tree-sitter/tree-sitter-rust")
+          (yaml   "https://github.com/ikatyang/tree-sitter-yaml")
+          (json   "https://github.com/tree-sitter/tree-sitter-json"))))
 
 ;;;; ========================================
-;;;; Completion (vertico + consult)
+;;;; Completion (vertico + consult + embark)
 ;;;; ========================================
 
 (use-package vertico
@@ -132,6 +134,18 @@
 (use-package orderless
   :custom
   (completion-styles '(orderless basic)))
+
+(use-package embark
+  :bind (("C-." . embark-act)
+         ("C-;" . embark-dwim))
+  :config
+  (setq prefix-help-command #'embark-prefix-help-command))
+
+(use-package embark-consult
+  :after embark consult
+  :hook (embark-collect-mode . consult-preview-at-point-mode))
+
+(use-package wgrep)
 
 (use-package affe
   :after orderless consult
@@ -194,6 +208,9 @@
 ;;;; Git
 ;;;; ========================================
 
+(use-package magit
+  :bind ("C-c g" . magit-status))
+
 (use-package git-gutter
   :config
   (global-git-gutter-mode 1))
@@ -201,6 +218,20 @@
 ;;;; ========================================
 ;;;; Languages
 ;;;; ========================================
+
+(use-package markdown-mode
+  :mode ("\\.md\\'" . gfm-mode)
+  :custom
+  (markdown-fontify-code-blocks-natively t)
+  (markdown-command "pandoc"))
+
+(use-package yaml-ts-mode
+  :ensure nil
+  :mode ("\\.ya?ml\\'" . yaml-ts-mode))
+
+(use-package json-ts-mode
+  :ensure nil
+  :mode ("\\.json\\'" . json-ts-mode))
 
 (use-package go-mode
   :mode "\\.go\\'"
