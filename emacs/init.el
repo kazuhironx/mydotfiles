@@ -88,10 +88,11 @@
   (defvar-keymap mc/mark-repeat-map
     "n" #'mc/mark-next-like-this
     "p" #'mc/unmark-next-like-this)
-  (dolist (cmd '(mc/mark-next-like-this mc/unmark-next-like-this))
-    (advice-add cmd :after
-                (lambda (&rest _)
-                  (set-transient-map mc/mark-repeat-map t)))))
+  (defun mc/activate-repeat-map (&rest _)
+    (run-at-time 0 nil
+      (lambda () (set-transient-map mc/mark-repeat-map t))))
+  (advice-add 'mc/mark-next-like-this :after #'mc/activate-repeat-map)
+  (advice-add 'mc/unmark-next-like-this :after #'mc/activate-repeat-map))
 
 (use-package repeat
   :ensure nil
