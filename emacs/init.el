@@ -83,14 +83,14 @@
 (use-package multiple-cursors
   :bind (("C-c m l" . mc/edit-lines)
          ("C-c m a" . mc/mark-all-like-this)
-         ("C-c m n" . mc/mark-next-like-this)
-         ("C-c m p" . mc/mark-previous-like-this))
+         ("M-n"     . mc/mark-next-like-this)
+         ("M-p"     . mc/unmark-next-like-this))
   :init
   (with-eval-after-load 'multiple-cursors-core
     (defvar-keymap mc/mark-repeat-map
       :repeat t
       "n" #'mc/mark-next-like-this
-      "p" #'mc/mark-previous-like-this)))
+      "p" #'mc/unmark-next-like-this)))
 
 (use-package repeat
   :ensure nil
