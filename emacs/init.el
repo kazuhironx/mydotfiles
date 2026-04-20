@@ -125,7 +125,9 @@
   :init
   (marginalia-mode))
 
-(use-package consult)
+(use-package consult
+  :bind (("C-c f" . consult-fd)
+         ("C-c s" . consult-ripgrep)))
 
 (use-package orderless
   :custom
