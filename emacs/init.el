@@ -88,11 +88,11 @@
     "p" #'my/mc-unmark-next)
   (defun my/mc-mark-next ()
     (interactive)
-    (mc/mark-next-like-this 1)
+    (call-interactively #'mc/mark-next-like-this)
     (set-transient-map my/mc-repeat-map t))
   (defun my/mc-unmark-next ()
     (interactive)
-    (mc/unmark-next-like-this)
+    (call-interactively #'mc/unmark-next-like-this)
     (set-transient-map my/mc-repeat-map t)))
 
 (use-package repeat
