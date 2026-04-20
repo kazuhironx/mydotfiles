@@ -125,7 +125,11 @@
   :init
   (marginalia-mode))
 
-(use-package consult)
+(use-package consult
+  :bind (("C-c s" . consult-ripgrep))
+  :custom
+  (consult-ripgrep-args
+   "rg --null --line-buffered --color=never --max-columns=1000 --path-separator / --smart-case --no-heading --with-filename --line-number --search-zip --hidden --glob !.git/"))
 
 (use-package orderless
   :custom
