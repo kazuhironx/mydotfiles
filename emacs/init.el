@@ -60,6 +60,11 @@
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z")))
 
+(use-package vundo
+  :bind ("C-c u" . vundo)
+  :custom
+  (vundo-glyph-alist vundo-unicode-symbols))
+
 (use-package files
   :ensure nil
   :custom
