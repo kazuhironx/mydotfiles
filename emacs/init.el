@@ -59,10 +59,7 @@
   (keyboard-translate ?\C-h ?\C-?)
   ;; Disable suspend-frame (useless in tmux, dangerous in terminal)
   (global-unset-key (kbd "C-z"))
-  (global-unset-key (kbd "C-x C-z"))
-  ;; Scroll other window from minibuffer (C-M-S-v unavailable in terminal)
-  (define-key minibuffer-local-map (kbd "M-p") #'scroll-other-window-down)
-  (define-key minibuffer-local-map (kbd "M-n") #'scroll-other-window))
+  (global-unset-key (kbd "C-x C-z")))
 
 (use-package vundo
   :bind ("C-c u" . vundo)
@@ -70,7 +67,10 @@
   (vundo-glyph-alist vundo-unicode-symbols))
 
 (use-package visual-regexp
-  :bind (("M-%" . vr/query-replace)))
+  :bind (("M-%" . vr/query-replace))
+  :config
+  (define-key vr/minibuffer-keymap (kbd "M-n") #'scroll-other-window)
+  (define-key vr/minibuffer-keymap (kbd "M-p") #'scroll-other-window-down))
 
 (use-package visual-regexp-steroids
   :after visual-regexp
