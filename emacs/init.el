@@ -186,6 +186,15 @@
   :custom
   (completion-styles '(orderless basic)))
 
+(use-package corfu
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.2)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  :init
+  (global-corfu-mode))
+
 (use-package embark
   :bind (("C-c a" . embark-act)
          ("C-c d" . embark-dwim))
