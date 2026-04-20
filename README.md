@@ -49,6 +49,17 @@ source ~/.zshrc
 tmux source-file ~/.tmux.conf
 ```
 
+### 4. Emacs: Tree-sitter グラマーのインストール
+
+Emacs 30 の Tree-sitter モード (`c-ts-mode`, `go-ts-mode` 等) を使うには、初回起動後に以下を実行してください。
+
+```
+M-x treesit-install-language-grammar RET c
+M-x treesit-install-language-grammar RET cpp
+M-x treesit-install-language-grammar RET go
+M-x treesit-install-language-grammar RET rust
+```
+
 ## ライセンス
 
 MIT
