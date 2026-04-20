@@ -246,6 +246,14 @@
 
 (add-to-list 'default-frame-alist '(alpha 85 85))
 
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+(use-package olivetti
+  :custom
+  (olivetti-body-width 100)
+  :hook (markdown-mode . olivetti-mode))
+
 ;;;; ========================================
 ;;;; Git
 ;;;; ========================================
@@ -253,9 +261,11 @@
 (use-package magit
   :bind ("C-c g" . magit-status))
 
-(use-package git-gutter
+(use-package diff-hl
   :config
-  (global-git-gutter-mode 1))
+  (global-diff-hl-mode 1)
+  (diff-hl-flydiff-mode 1)
+  :hook (magit-post-refresh . diff-hl-magit-post-refresh))
 
 ;;;; ========================================
 ;;;; Languages
