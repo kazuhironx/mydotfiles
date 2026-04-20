@@ -219,7 +219,9 @@
          (go-mode   . eglot-ensure)
          (go-ts-mode . eglot-ensure)
          (rust-mode . eglot-ensure)
-         (rust-ts-mode . eglot-ensure))
+         (rust-ts-mode . eglot-ensure)
+         (python-mode . eglot-ensure)
+         (python-ts-mode . eglot-ensure))
   :custom
   (eldoc-echo-area-use-multiline-p nil)
   (eglot-connect-timeout 600)
