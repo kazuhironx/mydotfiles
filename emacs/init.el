@@ -71,8 +71,11 @@
 
 (use-package visual-regexp-steroids
   :after visual-regexp
+  :requires pcre2el
   :custom
   (vr/engine 'pcre2el))
+
+(use-package pcre2el)
 
 (use-package files
   :ensure nil
