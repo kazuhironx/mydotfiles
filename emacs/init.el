@@ -136,8 +136,8 @@
   (completion-styles '(orderless basic)))
 
 (use-package embark
-  :bind (("C-." . embark-act)
-         ("C-;" . embark-dwim))
+  :bind (("C-c a" . embark-act)
+         ("C-c d" . embark-dwim))
   :config
   (setq prefix-help-command #'embark-prefix-help-command))
 
