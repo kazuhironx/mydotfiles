@@ -61,6 +61,11 @@
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z")))
 
+(use-package editorconfig
+  :ensure nil
+  :config
+  (editorconfig-mode 1))
+
 (use-package vundo
   :bind ("C-c u" . vundo)
   :custom
