@@ -65,6 +65,14 @@
   :custom
   (vundo-glyph-alist vundo-unicode-symbols))
 
+(use-package visual-regexp
+  :bind (("M-%" . vr/query-replace)))
+
+(use-package visual-regexp-steroids
+  :after visual-regexp
+  :custom
+  (vr/engine 'pcre2el))
+
 (use-package files
   :ensure nil
   :custom
