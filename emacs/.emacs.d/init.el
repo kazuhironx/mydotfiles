@@ -1,4 +1,4 @@
-;;; init.el --- Emacs config -*- lexical-binding: t; -*-
+;;; init.el --- Emacs 30 config -*- lexical-binding: t; -*-
 
 ;;;; ========================================
 ;;;; Package Management
@@ -7,7 +7,9 @@
 (setq package-archives
       '(("gnu"   . "https://elpa.gnu.org/packages/")
         ("melpa" . "https://melpa.org/packages/")))
+
 (package-initialize)
+(setq use-package-always-ensure t)
 
 (setq custom-file (locate-user-emacs-file "custom.el"))
 (when (file-exists-p custom-file)
@@ -18,6 +20,7 @@
 ;;;; ========================================
 
 (use-package emacs
+  :ensure nil
   :custom
   (truncate-lines t)
   (create-lockfiles nil)
@@ -52,10 +55,10 @@
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (global-display-line-numbers-mode 1)
-  (defalias 'yes-or-no-p 'y-or-n-p)
   (keyboard-translate ?\C-h ?\C-?))
 
 (use-package files
+  :ensure nil
   :custom
   (auto-save-timeout 15)
   (auto-save-interval 60)
@@ -67,6 +70,7 @@
   (auto-save-list-file-prefix (locate-user-emacs-file "backup/.saves-")))
 
 (use-package autorevert
+  :ensure nil
   :custom
   (auto-revert-interval 0.3)
   (auto-revert-check-vc-info t)
@@ -74,25 +78,43 @@
   (global-auto-revert-mode 1))
 
 (use-package delsel
+  :ensure nil
   :config
   (delete-selection-mode 1))
 
 (use-package paren
+  :ensure nil
   :custom
   (show-paren-delay 0.1)
   :config
   (show-paren-mode 1))
 
-(use-package compile
+(use-package which-key
+  :ensure nil
+  :config
+  (which-key-mode))
+
+;;;; ========================================
+;;;; Tree-sitter grammar sources
+;;;; ========================================
+
+(use-package treesit
+  :ensure nil
   :custom
-  (byte-compile-warnings '(cl-functions)))
+  (treesit-font-lock-level 4)
+  :config
+  (setq treesit-language-source-alist
+        '((c      "https://github.com/tree-sitter/tree-sitter-c")
+          (cpp    "https://github.com/tree-sitter/tree-sitter-cpp")
+          (go     "https://github.com/tree-sitter/tree-sitter-go")
+          (gomod  "https://github.com/AZMCode/tree-sitter-go-mod")
+          (rust   "https://github.com/tree-sitter/tree-sitter-rust"))))
 
 ;;;; ========================================
 ;;;; Completion (vertico + consult)
 ;;;; ========================================
 
 (use-package vertico
-  :ensure t
   :custom
   (vertico-count 30)
   (vertico-cycle t)
@@ -100,26 +122,21 @@
   (vertico-mode))
 
 (use-package marginalia
-  :ensure t
   :init
   (marginalia-mode))
 
-(use-package consult
-  :ensure t)
+(use-package consult)
 
 (use-package orderless
-  :ensure t
   :custom
   (completion-styles '(orderless basic)))
 
 (use-package affe
-  :ensure t
   :after orderless consult
   :custom
   (affe-find-command "fd --color=never --full-path --hidden --exclude .git"))
 
 (use-package consult-ghq
-  :ensure t
   :if (executable-find "ghq"))
 
 ;;;; ========================================
@@ -127,24 +144,28 @@
 ;;;; ========================================
 
 (use-package eglot
-  :hook ((c-mode . eglot-ensure)
-         (c++-mode . eglot-ensure)
-         (go-mode . eglot-ensure)
-         (rust-mode . eglot-ensure))
+  :ensure nil
+  :hook ((c-mode    . eglot-ensure)
+         (c++-mode  . eglot-ensure)
+         (c-ts-mode . eglot-ensure)
+         (c++-ts-mode . eglot-ensure)
+         (go-mode   . eglot-ensure)
+         (go-ts-mode . eglot-ensure)
+         (rust-mode . eglot-ensure)
+         (rust-ts-mode . eglot-ensure))
   :custom
   (eldoc-echo-area-use-multiline-p nil)
   (eglot-connect-timeout 600)
-  (eglot-server-programs '((c-mode . ("clangd"))
-                           (c++-mode . ("clangd"))
-                           (go-mode . ("gopls"))
-                           (rust-mode . ("rust-analyzer")))))
+  :config
+  (add-to-list 'eglot-server-programs '((c-mode c-ts-mode c++-mode c++-ts-mode) "clangd"))
+  (add-to-list 'eglot-server-programs '((go-mode go-ts-mode) "gopls"))
+  (add-to-list 'eglot-server-programs '((rust-mode rust-ts-mode) "rust-analyzer")))
 
 (use-package eglot-booster
   :if (executable-find "emacs-lsp-booster")
+  :vc (:url "https://github.com/jdtsmith/eglot-booster")
   :after eglot
   :config
-  (unless (package-installed-p 'eglot-booster)
-    (package-vc-install "https://github.com/jdtsmith/eglot-booster"))
   (eglot-booster-mode))
 
 ;;;; ========================================
@@ -152,7 +173,6 @@
 ;;;; ========================================
 
 (use-package doom-themes
-  :ensure t
   :custom
   (doom-themes-enable-bold t)
   (doom-themes-enable-italic t)
@@ -162,7 +182,6 @@
     (set-face-attribute 'default nil :background "unspecified-bg")))
 
 (use-package doom-modeline
-  :ensure t
   :hook (after-init . doom-modeline-mode)
   :custom
   (doom-modeline-buffer-file-name-style 'truncate-with-project))
@@ -174,7 +193,6 @@
 ;;;; ========================================
 
 (use-package git-gutter
-  :ensure t
   :config
   (global-git-gutter-mode 1))
 
@@ -183,11 +201,20 @@
 ;;;; ========================================
 
 (use-package go-mode
-  :ensure t
   :mode "\\.go\\'"
   :hook (before-save . gofmt-before-save)
   :custom
   (tab-width 2))
+
+(use-package go-ts-mode
+  :ensure nil
+  :hook (before-save . gofmt-before-save)
+  :custom
+  (tab-width 2))
+
+(use-package rust-ts-mode
+  :ensure nil
+  :mode "\\.rs\\'")
 
 ;;;; ========================================
 
