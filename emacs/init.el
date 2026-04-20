@@ -192,6 +192,9 @@
   (corfu-auto-delay 0.2)
   (corfu-auto-prefix 2)
   (corfu-cycle t)
+  :bind (:map corfu-map
+         ("M-n" . corfu-next)
+         ("M-p" . corfu-previous))
   :init
   (global-corfu-mode))
 
