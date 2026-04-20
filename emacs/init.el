@@ -249,11 +249,6 @@
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
-(use-package olivetti
-  :custom
-  (olivetti-body-width 100)
-  :hook (markdown-mode . olivetti-mode))
-
 ;;;; ========================================
 ;;;; Git
 ;;;; ========================================
@@ -262,8 +257,10 @@
   :bind ("C-c g" . magit-status))
 
 (use-package diff-hl
+  :demand t
   :config
   (global-diff-hl-mode 1)
+  (require 'diff-hl-flydiff)
   (diff-hl-flydiff-mode 1)
   :hook (magit-post-refresh . diff-hl-magit-post-refresh))
 
