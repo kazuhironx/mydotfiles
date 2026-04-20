@@ -28,6 +28,7 @@
   (init-file-debug t)
   (frame-resize-pixelwise t)
   (enable-recursive-minibuffers t)
+  (native-comp-async-report-warnings-errors 'silent)
   (history-length 1000)
   (history-delete-duplicates t)
   (scroll-preserve-screen-position t)
