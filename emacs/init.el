@@ -59,7 +59,8 @@
   (keyboard-translate ?\C-h ?\C-?)
   ;; Disable suspend-frame (useless in tmux, dangerous in terminal)
   (global-unset-key (kbd "C-z"))
-  (global-unset-key (kbd "C-x C-z")))
+  (global-unset-key (kbd "C-x C-z"))
+  (global-set-key (kbd "C-o") #'dabbrev-expand))
 
 (use-package editorconfig
   :ensure nil
