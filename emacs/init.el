@@ -81,18 +81,11 @@
 (use-package pcre2el)
 
 (use-package multiple-cursors
-  :bind (("C-c m n" . mc/mark-next-like-this)
-         ("C-c m p" . mc/unmark-next-like-this)
+  :bind (("C-c m" . mc/mark-more-like-this-extended)
          ("C-c m l" . mc/edit-lines))
   :config
-  (defvar-keymap mc/mark-repeat-map
-    "n" #'mc/mark-next-like-this
-    "p" #'mc/unmark-next-like-this)
-  (defun mc/activate-repeat-map (&rest _)
-    (run-at-time 0 nil
-      (lambda () (set-transient-map mc/mark-repeat-map t))))
-  (advice-add 'mc/mark-next-like-this :after #'mc/activate-repeat-map)
-  (advice-add 'mc/unmark-next-like-this :after #'mc/activate-repeat-map))
+  (define-key mc/mark-more-like-this-extended-keymap (kbd "n") #'mc/mmlte--down)
+  (define-key mc/mark-more-like-this-extended-keymap (kbd "p") #'mc/mmlte--up))
 
 (use-package repeat
   :ensure nil
