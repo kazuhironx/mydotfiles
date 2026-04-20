@@ -177,7 +177,9 @@
 
 (use-package consult
   :bind (("C-c f" . consult-fd)
-         ("C-c s" . consult-ripgrep)))
+         ("C-c s" . consult-ripgrep))
+  :custom
+  (consult-fd-args '("fd" "--full-path" "--color=never")))
 
 (use-package orderless
   :custom
