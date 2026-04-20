@@ -179,7 +179,8 @@
   :bind (("C-c f" . consult-fd)
          ("C-c s" . consult-ripgrep))
   :custom
-  (consult-fd-args '("fd" "--full-path" "--color=never")))
+  (consult-fd-args '("fd" "--full-path" "--color=never"))
+  (consult-async-min-input 0))
 
 (use-package orderless
   :custom
