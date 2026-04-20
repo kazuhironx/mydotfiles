@@ -81,19 +81,9 @@
 (use-package pcre2el)
 
 (use-package multiple-cursors
-  :bind ("C-c m" . my/mc-mark-next)
-  :config
-  (defvar-keymap my/mc-repeat-map
-    "n" #'my/mc-mark-next
-    "p" #'my/mc-unmark-next)
-  (defun my/mc-mark-next ()
-    (interactive)
-    (call-interactively #'mc/mark-next-like-this)
-    (set-transient-map my/mc-repeat-map t))
-  (defun my/mc-unmark-next ()
-    (interactive)
-    (call-interactively #'mc/unmark-next-like-this)
-    (set-transient-map my/mc-repeat-map t)))
+  :bind (("C-c m n" . mc/mark-next-like-this)
+         ("C-c m p" . mc/unmark-next-like-this)
+         ("C-c m l" . mc/edit-lines)))
 
 (use-package repeat
   :ensure nil
