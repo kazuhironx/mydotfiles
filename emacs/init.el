@@ -81,41 +81,23 @@
 (use-package pcre2el)
 
 (use-package multiple-cursors
-  :bind (("C-c m n" . my/mc-mark-start)
+  :bind (("C-c m n" . my/mc-mark-next)
+         ("C-c m p" . my/mc-unmark)
          ("C-c m l" . mc/edit-lines))
   :config
   (add-to-list 'mc/cmds-to-run-once 'my/mc-mark-next)
   (add-to-list 'mc/cmds-to-run-once 'my/mc-unmark)
-  (add-to-list 'mc/cmds-to-run-once 'my/mc-mark-start)
-  (defvar my/mc-marking nil)
-  (defvar-keymap my/mc-marking-map
+  (defvar-keymap my/mc-repeat-map
     "n" #'my/mc-mark-next
     "p" #'my/mc-unmark)
-  (defun my/mc-mark-start ()
-    "Start marking next match and enter repeat mode."
-    (interactive)
-    (mc/mark-next-like-this 1)
-    (setq my/mc-marking t)
-    (set-transient-map my/mc-marking-map #'my/mc-marking-p #'my/mc-marking-done))
   (defun my/mc-mark-next ()
     (interactive)
     (mc/mark-next-like-this 1)
-    (setq my/mc-marking t))
+    (set-transient-map my/mc-repeat-map t))
   (defun my/mc-unmark ()
     (interactive)
     (mc/unmark-next-like-this)
-    (setq my/mc-marking t))
-  (defun my/mc-marking-p ()
-    (if my/mc-marking
-        (progn (setq my/mc-marking nil) t)
-      nil))
-  (defun my/mc-marking-done ()
-    (setq my/mc-marking nil)))
-
-(use-package repeat
-  :ensure nil
-  :config
-  (repeat-mode 1))
+    (set-transient-map my/mc-repeat-map t)))
 
 (use-package files
   :ensure nil
