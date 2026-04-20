@@ -262,6 +262,8 @@
   (global-diff-hl-mode 1)
   (require 'diff-hl-flydiff)
   (diff-hl-flydiff-mode 1)
+  (unless (display-graphic-p)
+    (diff-hl-margin-mode 1))
   :hook (magit-post-refresh . diff-hl-magit-post-refresh))
 
 ;;;; ========================================
