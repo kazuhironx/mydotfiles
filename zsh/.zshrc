@@ -62,6 +62,7 @@ setopt nocheckjobs
 
 # stty
 stty stop undef
+stty start undef
 
 # completion like emacs
 zstyle ':completion:*:default' menu select=1

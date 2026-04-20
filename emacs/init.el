@@ -55,7 +55,10 @@
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (global-display-line-numbers-mode 1)
-  (keyboard-translate ?\C-h ?\C-?))
+  (keyboard-translate ?\C-h ?\C-?)
+  ;; Disable suspend-frame (useless in tmux, dangerous in terminal)
+  (global-unset-key (kbd "C-z"))
+  (global-unset-key (kbd "C-x C-z")))
 
 (use-package files
   :ensure nil
