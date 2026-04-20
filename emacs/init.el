@@ -85,14 +85,12 @@
          ("C-c m a" . mc/mark-all-like-this)
          ("C-c m n" . mc/mark-next-like-this)
          ("C-c m p" . mc/mark-previous-like-this))
-  :config
-  (defvar mc/mark-repeat-map
-    (let ((map (make-sparse-keymap)))
-      (define-key map "n" #'mc/mark-next-like-this)
-      (define-key map "p" #'mc/mark-previous-like-this)
-      map))
-  (put 'mc/mark-next-like-this 'repeat-map 'mc/mark-repeat-map)
-  (put 'mc/mark-previous-like-this 'repeat-map 'mc/mark-repeat-map))
+  :init
+  (with-eval-after-load 'multiple-cursors-core
+    (defvar-keymap mc/mark-repeat-map
+      :repeat t
+      "n" #'mc/mark-next-like-this
+      "p" #'mc/mark-previous-like-this)))
 
 (use-package repeat
   :ensure nil
