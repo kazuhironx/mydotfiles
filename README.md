@@ -9,6 +9,7 @@
 | `zsh/.zshrc` | Zsh 設定 |
 | `tmux/.tmux.conf` | tmux 設定 |
 | `emacs/init.el` | Emacs 設定 |
+| `starship/starship.toml` | Starship プロンプト設定 |
 | `copilot/` | GitHub Copilot CLI 設定 (skills, hooks, scripts) |
 
 ## 依存ツール
@@ -68,6 +69,10 @@ ln -sf ~/dotfiles/tmux/.tmux.conf ~/.tmux.conf
 
 # Emacs
 ln -sf ~/dotfiles/emacs/init.el ~/.emacs.d/init.el
+
+# Starship
+mkdir -p ~/.config
+ln -sf ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 
 # GitHub Copilot CLI (グローバル設定)
 ln -sf ~/dotfiles/copilot ~/.config/github-copilot/
