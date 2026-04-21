@@ -109,10 +109,10 @@ alias copilot='copilot \
      --deny-tool="shell(git push:*)" \
      --deny-tool="shell(rm)"'
 
-# starship
-eval "$(starship init zsh)"
-
-# zsh plugins (after compinit and starship)
+# zsh plugins (after compinit)
 source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# starship (must be last)
+eval "$(starship init zsh)"
