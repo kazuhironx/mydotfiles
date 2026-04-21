@@ -125,6 +125,15 @@
   :config
   (global-auto-revert-mode 1))
 
+(use-package tramp
+  :ensure nil
+  :defer t
+  :config
+  (setq tramp-default-method "ssh")
+  (setq tramp-auto-save-directory "/tmp")
+  (setq tramp-verbose 1)
+  (setq remote-file-name-inhibit-cache nil))
+
 (use-package delsel
   :ensure nil
   :config
