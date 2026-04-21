@@ -2,7 +2,8 @@
 add_newline = true
 
 [character]
-format = "[\\$](green bold) "
+success_symbol = "[\\$](green bold)"
+error_symbol = "[\\$](red bold)"
 
 [directory]
 truncation_length = 3
@@ -13,15 +14,15 @@ format = '\([$symbol$branch(:$remote_branch)]($style)\)'
 
 [git_status]
 format = '([$all_status$ahead_behind]($style) )'
-conflicted = ''
-ahead = ''
-behind = ''
-diverged = ''
+conflicted = '='
+ahead = '⇡'
+behind = '⇣'
+diverged = '⇕'
 up_to_date = '✓'
 untracked = ''
 stashed = ''
 modified = '🔥'
-staged = ''
+staged = '+'
 renamed = ''
 deleted = ''
 
