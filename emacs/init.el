@@ -167,7 +167,17 @@
           (gomod  "https://github.com/AZMCode/tree-sitter-go-mod")
           (rust   "https://github.com/tree-sitter/tree-sitter-rust")
           (yaml   "https://github.com/ikatyang/tree-sitter-yaml")
-          (json   "https://github.com/tree-sitter/tree-sitter-json"))))
+          (json   "https://github.com/tree-sitter/tree-sitter-json")))
+  ;; Remap to tree-sitter modes
+  (setq major-mode-remap-alist
+        '((c-mode      . c-ts-mode)
+          (c++-mode    . c++-ts-mode)
+          (go-mode     . go-ts-mode)
+          (rust-mode   . rust-ts-mode)
+          (yaml-mode   . yaml-ts-mode)
+          (json-mode   . json-ts-mode)))
+  ;; Treat .h as C++
+  (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-ts-mode)))
 
 ;;;; ========================================
 ;;;; Completion (vertico + consult + embark)
