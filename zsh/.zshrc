@@ -14,7 +14,7 @@ autoload -Uz compinit && compinit
 export LANG=en_US.utf8
 export LC_TIME=C
 export TERM=xterm-256color
-export EDITOR='emacsclient -nw -a ""'
+export EDITOR='emacsclient -nw -c -a ""'
 
 # emacs keybind
 bindkey -e
