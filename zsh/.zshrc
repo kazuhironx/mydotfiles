@@ -1,7 +1,7 @@
 path=($HOME/dev/bin $HOME/.local/bin $HOME/.cargo/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
 typeset -U path
 
-eval "$(git gtr completion zsh)"
+(( $+commands[git] )) && eval "$(git gtr completion zsh 2>/dev/null)"
 
 _gtr_init="${XDG_CACHE_HOME:-$HOME/.cache}/gtr/init-gtr.zsh"
 [[ -f "$_gtr_init" ]] || eval "$(git gtr init zsh)" || true
@@ -30,13 +30,13 @@ bindkey -e
 # delete 'C-j'
 bindkey -r '^J'
 
-# defaut umask
+# default umask
 umask 022
 
 # History
 HISTFILE=~/.zsh_history
-HISTSIZE=100000
-SAVEHIST=100000
+HISTSIZE=1000000
+SAVEHIST=1000000
 setopt hist_ignore_all_dups
 setopt hist_ignore_space
 setopt share_history
@@ -85,7 +85,6 @@ zstyle ':completion:*' use-cache true
 if [ -f ~/.bash_profile ]; then 
     . ~/.bash_profile;
 fi
-
 
 # setup ls coloring
 LIST_COLOR=('di=34;1' 'ln=35' 'so=32' 'ex=32;1' 'bd=46;34' 'cd=43;34')
