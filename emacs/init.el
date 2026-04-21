@@ -57,6 +57,8 @@
   (scroll-bar-mode -1)
   (global-display-line-numbers-mode 1)
   (keyboard-translate ?\C-h ?\C-?)
+  (add-hook 'after-make-frame-functions
+            (lambda (_frame) (keyboard-translate ?\C-h ?\C-?)))
   ;; Disable suspend-frame (useless in tmux, dangerous in terminal)
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z"))
