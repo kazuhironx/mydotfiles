@@ -57,6 +57,7 @@
   (scroll-bar-mode -1)
   (global-display-line-numbers-mode 1)
   (keyboard-translate ?\C-h ?\C-?)
+  ;; emacsclient -c で作った新フレームにも C-h=BS を適用する
   (add-hook 'after-make-frame-functions
             (lambda (_frame) (keyboard-translate ?\C-h ?\C-?)))
   ;; Disable suspend-frame (useless in tmux, dangerous in terminal)
@@ -70,16 +71,20 @@
   (unless (server-running-p)
     (server-start)))
 
+;; .editorconfig があるプロジェクトを開くとインデント幅や改行コードを自動適用
 (use-package editorconfig
   :ensure nil
   :config
   (editorconfig-mode 1))
 
+;; C-c u でundo履歴をツリー表示。左右で分岐を移動、上下で時間を遡る
 (use-package vundo
   :bind ("C-c u" . vundo)
   :custom
   (vundo-glyph-alist vundo-unicode-symbols))
 
+;; M-% でPCRE正規表現による置換。マッチ箇所をリアルタイムハイライトしながら置換
+;; ミニバッファ内で M-n/M-p でプレビューをスクロール可能
 (use-package visual-regexp
   :bind (("M-%" . vr/query-replace))
   :config
@@ -94,6 +99,9 @@
 
 (use-package pcre2el)
 
+;; C-c m n: 同じ単語の次の出現にカーソル追加 (n連打で続けて追加)
+;; C-c m p: 最後に追加したカーソルを取り消し (p連打で続けて取消)
+;; C-c m l: 選択範囲の各行にカーソルを置いて一括編集
 (use-package multiple-cursors
   :bind (("C-c m n" . my/mc-mark-next)
          ("C-c m p" . my/mc-unmark)
@@ -163,6 +171,9 @@
 ;;;; Tree-sitter grammar sources
 ;;;; ========================================
 
+;; tree-sitterによる高速・正確なシンタックスハイライト (Emacs 30組み込み)
+;; 文法追加: M-x treesit-install-language-grammar で言語を選択してインストール
+;; major-mode-remap-alist で従来モードを自動的にts版にリマップ
 (use-package treesit
   :ensure nil
   :custom
@@ -202,6 +213,9 @@
   :init
   (marginalia-mode))
 
+;; C-c f: fdでファイル名検索 (1文字入力で結果表示、絞り込み可)
+;; C-c s: ripgrepでファイル内容検索 (同上)
+;; 検索結果で C-c a → E で wgrep バッファに書き出して一括編集可
 (use-package consult
   :bind (("C-c f" . consult-fd)
          ("C-c s" . consult-ripgrep))
@@ -225,6 +239,9 @@
   :init
   (global-corfu-mode))
 
+;; C-c a: カーソル下の対象 (ファイル名,シンボル,URL等) にアクションメニューを表示
+;; C-c d: 対象に対して最も自然な操作を即実行 (dwim = do what I mean)
+;; 検索結果で C-c a → E: 結果をバッファに書き出し (wgrep連携で一括編集)
 (use-package embark
   :bind (("C-c a" . embark-act)
          ("C-c d" . embark-dwim))
