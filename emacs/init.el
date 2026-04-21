@@ -77,7 +77,7 @@
   :config
   (editorconfig-mode 1))
 
-;; C-c u でundo履歴をツリー表示。左右で分岐を移動、上下で時間を遡る
+;; C-c u でundo履歴をツリー表示。f,bで分岐を移動、p,nで時間を遡る
 (use-package vundo
   :bind ("C-c u" . vundo)
   :custom
