@@ -42,7 +42,7 @@ setopt hist_ignore_space
 setopt share_history
 
 # fzf options (Emacs-like keybindings)
-export FZF_DEFAULT_OPTS='--reverse --bind=ctrl-k:kill-line,ctrl-a:beginning-of-line,ctrl-e:end-of-line,ctrl-u:unix-line-discard'
+export FZF_DEFAULT_OPTS='--reverse --bind=ctrl-k:kill-line,ctrl-a:beginning-of-line,ctrl-e:end-of-line'
 
 # history search with fzf
 function fzf-history-widget() {
