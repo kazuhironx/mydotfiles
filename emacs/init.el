@@ -62,6 +62,12 @@
   (global-unset-key (kbd "C-x C-z"))
   (global-set-key (kbd "C-o") #'dabbrev-expand))
 
+(use-package server
+  :ensure nil
+  :config
+  (unless (server-running-p)
+    (server-start)))
+
 (use-package editorconfig
   :ensure nil
   :config
