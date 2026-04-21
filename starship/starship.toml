@@ -1,51 +1,35 @@
-# Starship prompt configuration
-# https://starship.rs/config/
-
-format = """
-$username\
-$hostname\
-$directory\
-$git_branch\
-$git_status\
-$c\
-$golang\
-$rust\
-$python\
-$nodejs\
-$cmd_duration\
-$line_break\
-$character"""
+"$schema" = 'https://starship.rs/config-schema.json'
+add_newline = true
 
 [character]
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
-vimcmd_symbol = "[❮](bold green)"
+format = "[\\$](green bold) "
 
 [directory]
-truncation_length = 5
-truncate_to_repo = true
+truncation_length = 3
 
 [git_branch]
-format = "[$symbol$branch(:$remote_branch)]($style) "
+symbol = ''
+format = '\([$symbol$branch(:$remote_branch)]($style)\)'
 
 [git_status]
-format = '([\[$all_status$ahead_behind\]]($style) )'
+format = '([$all_status$ahead_behind]($style) )'
+conflicted = ''
+ahead = ''
+behind = ''
+diverged = ''
+up_to_date = '✓'
+untracked = ''
+stashed = ''
+modified = '🔥'
+staged = ''
+renamed = ''
+deleted = ''
 
-[cmd_duration]
-min_time = 3000
-format = "[$duration]($style) "
-
-[c]
-format = "[$symbol($version(-$name))]($style) "
-
-[golang]
-format = "[$symbol($version)]($style) "
-
-[rust]
-format = "[$symbol($version)]($style) "
-
-[python]
-format = "[$symbol$pyenv_prefix($version)( \\($virtualenv\\))]($style) "
+[package]
+disabled = true
 
 [nodejs]
-format = "[$symbol($version)]($style) "
+disabled = true
+
+[gcloud]
+disabled = true
