@@ -11,6 +11,42 @@
 | `emacs/init.el` | Emacs 設定 |
 | `copilot/` | GitHub Copilot CLI 設定 (skills, hooks, scripts) |
 
+## 依存ツール
+
+### 必須
+
+| ツール | 用途 | インストール |
+|--------|------|-------------|
+| `zsh` | シェル | `sudo apt install zsh` |
+| `tmux` (3.6+) | ターミナルマルチプレクサ | `sudo apt install tmux` |
+| `emacs` (30+) | エディタ | [ビルド手順](#5-emacs-302-のビルド-ubuntu-2204) |
+| `git` | バージョン管理 | `sudo apt install git` |
+| `fzf` | ファジー検索 (zsh履歴, tmux picker) | `sudo apt install fzf` |
+| `fd-find` | ファイル名検索 (consult-fd, affe) | `sudo apt install fd-find` |
+| `ripgrep` | ファイル内容検索 (consult-ripgrep) | `sudo apt install ripgrep` |
+| `starship` | プロンプト | `curl -sS https://starship.rs/install.sh \| sh` |
+| `zsh-autosuggestions` | 入力補完 | `sudo apt install zsh-autosuggestions` |
+| `zsh-syntax-highlighting` | シンタックスハイライト | `sudo apt install zsh-syntax-highlighting` |
+
+### LSP サーバー (言語別)
+
+| ツール | 言語 | インストール |
+|--------|------|-------------|
+| `clangd` | C/C++ | `sudo apt install clangd` |
+| `gopls` | Go | `go install golang.org/x/tools/gopls@latest` |
+| `rust-analyzer` | Rust | `rustup component add rust-analyzer` |
+
+### オプショナル
+
+| ツール | 用途 | インストール |
+|--------|------|-------------|
+| `ghq` | リポジトリ管理 (consult-ghq) | `go install github.com/x-motemen/ghq@latest` |
+| `emacs-lsp-booster` | eglot 高速化 | [GitHub](https://github.com/blahgeek/emacs-lsp-booster) |
+| `pandoc` | Markdown プレビュー | `sudo apt install pandoc` |
+| `asdf` | バージョンマネージャ | [公式手順](https://asdf-vm.com/) |
+| `git-gtr` | git worktree 管理 | `go install github.com/nicr9/git-gtr@latest` |
+| GitHub Copilot CLI | AI アシスタント | `npm install -g @githubnext/github-copilot-cli` |
+
 ## インストール
 
 ### 1. リポジトリをクローン
