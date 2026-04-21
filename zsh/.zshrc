@@ -62,6 +62,7 @@ bindkey "^P" history-beginning-search-backward-end
 bindkey "^N" history-beginning-search-forward-end
 
 # Shell options
+setopt glob_dots            # tab補完でドットファイルも表示
 setopt auto_cd              # cd by directory name
 setopt auto_pushd           # use cd -
 setopt ignoreeof            # not exit Ctrl-D
