@@ -1,0 +1,19 @@
+# Copy this file to ~/.gitconfig.local and edit for your environment.
+# It is loaded from the shared gitconfig via [include].
+
+[user]
+	name = Your Name
+	email = you@example.com
+
+[credential]
+	helper = store
+
+# Optional: ghq root directory
+# [ghq]
+# 	root = /home/you/dev
+
+# Optional: git-gtr settings
+# [gtr "editor"]
+# 	default = emacs
+# [gtr "ai"]
+# 	default = "copilot --allow-all-tools --deny-tool=\"shell(git push)\" --deny-tool=\"shell(rm)\""

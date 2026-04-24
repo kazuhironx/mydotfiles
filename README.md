@@ -10,6 +10,8 @@
 | `tmux/.tmux.conf` | tmux 設定 |
 | `emacs/init.el` | Emacs 設定 |
 | `starship/starship.toml` | Starship プロンプト設定 |
+| `git/.gitconfig` | Git 共有設定 (delta / lfs / merge など) |
+| `git/.gitconfig.local.example` | ユーザー固有設定のテンプレート (user/credential など) |
 | `copilot/` | GitHub Copilot CLI 設定 (skills, hooks, scripts) |
 
 ## 依存ツール
@@ -21,7 +23,9 @@
 | `zsh` | シェル | `sudo apt install zsh` |
 | `tmux` (3.6+) | ターミナルマルチプレクサ | `sudo apt install tmux` |
 | `emacs` (30+) | エディタ | [ビルド手順](#5-emacs-302-のビルド-ubuntu-2204) |
-| `git` | バージョン管理 | `sudo apt install git` |
+| `git` (2.35+) | バージョン管理 (`merge.conflictstyle = zdiff3` に必要) | `sudo apt install git` |
+| `git-delta` | diff/pager 表示 | `sudo apt install git-delta` |
+| `git-lfs` | Large File Storage | `sudo apt install git-lfs` |
 | `fzf` | ファジー検索 (zsh履歴, tmux picker) | `sudo apt install fzf` |
 | `fd-find` | ファイル名検索 (consult-fd, affe) | `sudo apt install fd-find` |
 | `ripgrep` | ファイル内容検索 (consult-ripgrep) | `sudo apt install ripgrep` |
@@ -76,6 +80,12 @@ ln -sf ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 
 # GitHub Copilot CLI (グローバル設定)
 ln -sf ~/dotfiles/copilot ~/.config/github-copilot/
+
+# Git (共有設定)
+ln -sf ~/dotfiles/git/.gitconfig ~/.gitconfig
+# ユーザー固有設定 (user.name / email など) はテンプレートからコピーして編集
+cp ~/dotfiles/git/.gitconfig.local.example ~/.gitconfig.local
+$EDITOR ~/.gitconfig.local
 ```
 
 > **Note:** 既存ファイルがある場合は事前にバックアップを取ってください。`ln -sf` は既存のリンクを上書きしますが、実ファイル/ディレクトリがある場合は手動で退避が必要です。
