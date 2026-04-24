@@ -1,4 +1,4 @@
-path=($HOME/dev/bin $HOME/.local/bin $HOME/.cargo/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
+path=($HOME/dev/bin $HOME/.local/bin $HOME/.cargo/bin $HOME/go/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
 typeset -U path
 
 (( $+commands[git] )) && eval "$(git gtr completion zsh 2>/dev/null)"
