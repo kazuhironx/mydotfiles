@@ -46,12 +46,18 @@ export FZF_DEFAULT_OPTS='--reverse --bind=ctrl-k:kill-line,ctrl-a:beginning-of-l
 
 # history search with fzf
 function fzf-history-widget() {
-    local selected
-    selected=$(fc -rl 1 | awk '{$1=""; print substr($0,2)}' | fzf --no-sort --exact --reverse --height=40% --query="$LBUFFER")
-    if [[ -n "$selected" ]]; then
+    local result query selected
+    result=$(fc -rl 1 | awk '{$1=""; print substr($0,2)}' \
+        | fzf --no-sort --exact --reverse --height=40% \
+              --query="$LBUFFER" --print-query)
+    query=${result%%$'\n'*}
+    selected=${result#*$'\n'}
+    if [[ -n "$selected" && "$selected" != "$query" ]]; then
         BUFFER="$selected"
-        CURSOR=$#BUFFER
+    elif [[ -n "$query" ]]; then
+        BUFFER="$query"
     fi
+    CURSOR=$#BUFFER
     zle reset-prompt
 }
 zle -N fzf-history-widget
