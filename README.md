@@ -24,7 +24,7 @@
 | `tmux` (3.6+) | ターミナルマルチプレクサ | `sudo apt install tmux` |
 | `emacs` (30+) | エディタ | [ビルド手順](#5-emacs-302-のビルド-ubuntu-2204) |
 | `git` (2.35+) | バージョン管理 (`merge.conflictstyle = zdiff3` に必要) | `sudo apt install git` |
-| `git-delta` | diff/pager 表示 | `sudo apt install git-delta` |
+| `git-delta` | diff/pager 表示 | `sudo apt install git-delta` ([詳細](#git-delta-のインストール)) |
 | `git-lfs` | Large File Storage | `sudo apt install git-lfs` |
 | `fzf` | ファジー検索 (zsh履歴, tmux picker) | `sudo apt install fzf` |
 | `fd-find` | ファイル名検索 (consult-fd, affe) | `sudo apt install fd-find` |
@@ -88,6 +88,8 @@ cp ~/dotfiles/git/.gitconfig.local.example ~/.gitconfig.local
 $EDITOR ~/.gitconfig.local
 ```
 
+> **Note:** 共有 `~/.gitconfig` の末尾で `[include] path = ~/.gitconfig.local` を読み込むため、`user.name` / `user.email` / `credential.helper` などのマシン固有設定は `~/.gitconfig.local` に書きます。`.gitconfig.local` は **mydotfiles では管理しません**(マシンごと)。ファイルが存在しない場合は git は黙って無視するので安全です。
+
 > **Note:** 既存ファイルがある場合は事前にバックアップを取ってください。`ln -sf` は既存のリンクを上書きしますが、実ファイル/ディレクトリがある場合は手動で退避が必要です。
 
 ### 3. 反映
@@ -148,6 +150,39 @@ sudo make install
 > **Note:** GCC 12 の `-O2` は `xdisp.c` の native-comp 中にICE (Internal Compiler Error) を起こすことがあるため、`-O1` を使用しています。
 
 > **Note:** `init.el` で実際に使う機能 (native-comp, tree-sitter, eglot, magit, GUI) のみ有効化しています。画像拡張 (`--with-imagemagick`) や動的モジュール (`--with-modules`) が必要な場合は configure オプションと対応する `lib*-dev` パッケージを追加してください。Emacs 30 では JSON サポートが内蔵化されたため `--with-json` / `libjansson-dev` は不要です。
+
+### 6. git-delta のインストール
+
+`~/.gitconfig` で `core.pager = delta` を指定しているため、delta が無いと `git diff` / `git log` が動きません。
+
+#### apt (Ubuntu 22.04+)
+
+```bash
+sudo apt install git-delta
+```
+
+> パッケージ名は `git-delta` です(`delta` は別物のメールクライアントなので注意)。
+
+#### 最新版を使いたい場合 (.deb 直接)
+
+```bash
+VERSION=0.18.2  # https://github.com/dandavison/delta/releases で最新版を確認
+curl -LO https://github.com/dandavison/delta/releases/download/${VERSION}/git-delta_${VERSION}_amd64.deb
+sudo dpkg -i git-delta_${VERSION}_amd64.deb
+```
+
+#### cargo (Rust 環境がある場合)
+
+```bash
+cargo install git-delta
+```
+
+#### 確認
+
+```bash
+delta --version
+git diff   # delta 経由で side-by-side / 行番号付きで表示されればOK
+```
 
 ## ライセンス
 
