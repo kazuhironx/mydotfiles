@@ -120,7 +120,7 @@ M-x treesit-install-language-grammar RET json
 ```bash
 # 依存パッケージ (主なもの)
 sudo apt install build-essential texinfo libgtk-3-dev libgnutls28-dev \
-  libjansson-dev libtree-sitter-dev libgccjit-12-dev gcc-12 g++-12
+  libtree-sitter-dev libgccjit-12-dev gcc-12 g++-12
 
 # ソース取得
 git clone --depth 1 -b emacs-30.2 https://github.com/emacs-mirror/emacs.git
@@ -137,16 +137,15 @@ export C_INCLUDE_PATH=/usr/lib/gcc/x86_64-linux-gnu/12/include
   --with-native-compilation \
   --with-gnutls \
   --with-x-toolkit=gtk3 \
-  --with-tree-sitter \
-  --with-imagemagick \
-  --with-json \
-  --with-modules
+  --with-tree-sitter
 
 make -j$(nproc)
 sudo make install
 ```
 
 > **Note:** GCC 12 の `-O2` は `xdisp.c` の native-comp 中にICE (Internal Compiler Error) を起こすことがあるため、`-O1` を使用しています。
+
+> **Note:** `init.el` で実際に使う機能 (native-comp, tree-sitter, eglot, magit, GUI) のみ有効化しています。画像拡張 (`--with-imagemagick`) や動的モジュール (`--with-modules`) が必要な場合は configure オプションと対応する `lib*-dev` パッケージを追加してください。Emacs 30 では JSON サポートが内蔵化されたため `--with-json` / `libjansson-dev` は不要です。
 
 ## ライセンス
 
