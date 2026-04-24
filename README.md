@@ -120,7 +120,8 @@ M-x treesit-install-language-grammar RET json
 ```bash
 # 依存パッケージ (主なもの)
 sudo apt install build-essential texinfo libgtk-3-dev libgnutls28-dev \
-  libtree-sitter-dev libgccjit-12-dev gcc-12 g++-12
+  libtree-sitter-dev libgccjit-12-dev gcc-12 g++-12 \
+  libxpm-dev libpng-dev libjpeg-dev libgif-dev libtiff-dev librsvg2-dev libwebp-dev
 
 # ソース取得
 git clone --depth 1 -b emacs-30.2 https://github.com/emacs-mirror/emacs.git
