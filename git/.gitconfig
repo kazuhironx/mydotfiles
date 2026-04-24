@@ -1,3 +1,16 @@
+[ghq]
+	root = ~/dev
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge --skip -- %f
+	process = git-lfs filter-process --skip
+	required = true
+[log]
+	date = iso
+[gtr "editor"]
+	default = emacs
+[gtr "ai"]
+	default = "copilot --allow-all-tools --deny-tool=\"shell(git push)\" --deny-tool=\"shell(git push:*)\" --deny-tool=\"shell(rm)\""
 [core]
 	pager = delta
 [interactive]
@@ -8,12 +21,5 @@
 	line-numbers = true
 [merge]
 	conflictstyle = zdiff3
-[log]
-	date = iso
-[filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge --skip -- %f
-	process = git-lfs filter-process --skip
-	required = true
 [include]
 	path = ~/.gitconfig.local

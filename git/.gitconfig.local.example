@@ -7,13 +7,3 @@
 
 [credential]
 	helper = store
-
-# Optional: ghq root directory
-# [ghq]
-# 	root = /home/you/dev
-
-# Optional: git-gtr settings
-# [gtr "editor"]
-# 	default = emacs
-# [gtr "ai"]
-# 	default = "copilot --allow-all-tools --deny-tool=\"shell(git push)\" --deny-tool=\"shell(rm)\""
