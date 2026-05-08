@@ -179,9 +179,12 @@
   :custom
   (treesit-font-lock-level 4)
   :config
+  ;; Emacs 30.x の libtree-sitter は ABI 13-14 までサポート。
+  ;; tree-sitter-c/cpp の master (v0.23+) は ABI 15 を出力し version-mismatch で
+  ;; 文法ロードに失敗するため、ABI 14 を出力する最終バージョンに固定する。
   (setq treesit-language-source-alist
-        '((c      "https://github.com/tree-sitter/tree-sitter-c")
-          (cpp    "https://github.com/tree-sitter/tree-sitter-cpp")
+        '((c      "https://github.com/tree-sitter/tree-sitter-c"   "v0.21.4")
+          (cpp    "https://github.com/tree-sitter/tree-sitter-cpp" "v0.22.3")
           (go     "https://github.com/tree-sitter/tree-sitter-go")
           (gomod  "https://github.com/AZMCode/tree-sitter-go-mod")
           (rust   "https://github.com/tree-sitter/tree-sitter-rust")
