@@ -13,16 +13,22 @@
 | `git/.gitconfig` | Git 共有設定 (delta / lfs / merge など) |
 | `git/.gitconfig.local.example` | ユーザー固有設定のテンプレート (user/credential など) |
 | `agents/AGENTS.md` | AI エージェント共通グローバル指示 (single source of truth) |
+| `agents/skills/` | Claude Code / Codex / GitHub Copilot CLI で共通利用する Agent Skills |
 | `claude/CLAUDE.md` | Claude Code 用 (symlink → `agents/AGENTS.md`) |
 | `codex/AGENTS.md` | Codex 用 (symlink → `agents/AGENTS.md`) |
 | `copilot/copilot-instructions.md` | GitHub Copilot CLI 用 (symlink → `agents/AGENTS.md`) |
-| `copilot/{hooks,scripts,skills}/` | Copilot CLI 固有の hook / script / skill |
+| `copilot/{hooks,scripts,skills-copilot}/` | Copilot CLI 固有の hook / script / skill |
 
 ### AI エージェント設定の方針
 
 `agents/AGENTS.md` を **唯一のソース** として、各ツールの設定パスへは
 symlink を貼って同じ内容を参照させます。指示を更新するときは
 `agents/AGENTS.md` だけ編集すれば全ツールに反映されます。
+
+Agent Skills は、ツール横断で使えるものを `agents/skills/` に置きます。
+Claude Code / Codex / GitHub Copilot CLI の `skills` ディレクトリは
+この共通ディレクトリへの symlink にします。Copilot CLI 専用の skill は
+`copilot/skills-copilot/` に分けて、共通 skill からは外します。
 
 プロジェクト固有の指示は各リポジトリの `AGENTS.md` /
 `CLAUDE.md` / `.github/copilot-instructions.md` が優先されます。
@@ -92,12 +98,17 @@ mkdir -p ~/.config
 ln -sf ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 
 # AI エージェント グローバル指示 (single source = agents/AGENTS.md)
-mkdir -p ~/.claude ~/.codex
+mkdir -p ~/.claude ~/.codex ~/.copilot ~/.agents
 ln -sf ~/dotfiles/agents/AGENTS.md ~/.claude/CLAUDE.md
 ln -sf ~/dotfiles/agents/AGENTS.md ~/.codex/AGENTS.md
+ln -sf ~/dotfiles/agents/skills ~/.agents/skills
+ln -sf ../.agents/skills ~/.claude/skills
+ln -sf ../.agents/skills ~/.codex/skills
+ln -sf ../.agents/skills ~/.copilot/skills
 
 # GitHub Copilot CLI (グローバル設定。copilot-instructions.md は agents/AGENTS.md への symlink)
-ln -sf ~/dotfiles/copilot ~/.config/github-copilot/
+ln -sf ~/dotfiles/copilot/copilot-instructions.md ~/.copilot/copilot-instructions.md
+ln -sf ~/dotfiles/copilot/scripts ~/.copilot/scripts
 
 # Git (共有設定)
 ln -sf ~/dotfiles/git/.gitconfig ~/.gitconfig
