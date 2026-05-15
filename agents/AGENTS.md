@@ -27,6 +27,7 @@
 - Conventional Commits 風 (`feat:` / `fix:` / `docs:` / `chore:` …)
 - `--no-verify` 禁止
 - `main` / `develop` への force-push 禁止
+- `Co-Authored-By` トレーラーは付けない
 
 ## Command execution
 

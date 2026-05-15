@@ -13,11 +13,16 @@
 | `git/.gitconfig` | Git 共有設定 (delta / lfs / merge など) |
 | `git/.gitconfig.local.example` | ユーザー固有設定のテンプレート (user/credential など) |
 | `agents/AGENTS.md` | AI エージェント共通グローバル指示 (single source of truth) |
-| `agents/skills/` | Claude Code / Codex / GitHub Copilot CLI で共通利用する Agent Skills |
+| `agents/skills/` | 全エージェント共通で使う Agent Skills (ツール非依存 methodology) |
 | `claude/CLAUDE.md` | Claude Code 用 (symlink → `agents/AGENTS.md`) |
+| `claude/skills/` | Claude Code 専用 Agent Skills |
 | `codex/AGENTS.md` | Codex 用 (symlink → `agents/AGENTS.md`) |
+| `codex/skills/` | Codex 専用 Agent Skills |
 | `copilot/copilot-instructions.md` | GitHub Copilot CLI 用 (symlink → `agents/AGENTS.md`) |
-| `copilot/{hooks,scripts,skills-copilot}/` | Copilot CLI 固有の hook / script / skill |
+| `copilot/skills/` | GitHub Copilot CLI 専用 Agent Skills |
+| `copilot/{hooks,scripts}/` | Copilot CLI 固有の hook / script |
+| `scripts/bootstrap.sh` | clone 後 1 発で全設定をリンクする初期化スクリプト |
+| `scripts/setup-skills.sh` | Agent Skills の per-skill symlink を貼り直す (bootstrap から呼ばれる) |
 
 ### AI エージェント設定の方針
 
@@ -25,10 +30,18 @@
 symlink を貼って同じ内容を参照させます。指示を更新するときは
 `agents/AGENTS.md` だけ編集すれば全ツールに反映されます。
 
-Agent Skills は、ツール横断で使えるものを `agents/skills/` に置きます。
-Claude Code / Codex / GitHub Copilot CLI の `skills` ディレクトリは
-この共通ディレクトリへの symlink にします。Copilot CLI 専用の skill は
-`copilot/skills-copilot/` に分けて、共通 skill からは外します。
+Agent Skills は配置先で対象ツールを切り分けます:
+
+- `agents/skills/<name>/` — 全エージェントに配信される共通 skill
+- `claude/skills/<name>/`  — Claude Code のみに配信
+- `codex/skills/<name>/`   — Codex のみに配信
+- `copilot/skills/<name>/` — GitHub Copilot CLI のみに配信
+
+各ツールの `~/.<tool>/skills/` は **実ディレクトリ** にして、`scripts/setup-skills.sh`
+が `agents/skills/` の共通 skill と `<tool>/skills/` の専用 skill を per-skill
+symlink で配下に張ります。dir 全体を symlink にすると専用 skill を同居させ
+られなくなるため、この方式にしています。新しい skill を後から足したいとき
+は適切な場所に dir を作って `setup-skills.sh` を再実行するだけで反映されます。
 
 プロジェクト固有の指示は各リポジトリの `AGENTS.md` /
 `CLAUDE.md` / `.github/copilot-instructions.md` が優先されます。
@@ -79,47 +92,28 @@ Claude Code / Codex / GitHub Copilot CLI の `skills` ディレクトリは
 git clone https://github.com/kazuhironx/mydotfiles.git ~/dotfiles
 ```
 
-### 2. シンボリックリンクを作成
+### 2. bootstrap スクリプトを実行
 
-クローンしたら、各設定ファイルをホームディレクトリにシンボリックリンクするだけで使えます。
+クローン後、付属の `scripts/bootstrap.sh` を 1 回叩けば全配線が済みます。
 
 ```bash
-# Zsh
-ln -sf ~/dotfiles/zsh/.zshrc ~/.zshrc
-
-# tmux
-ln -sf ~/dotfiles/tmux/.tmux.conf ~/.tmux.conf
-
-# Emacs
-ln -sf ~/dotfiles/emacs/init.el ~/.emacs.d/init.el
-
-# Starship
-mkdir -p ~/.config
-ln -sf ~/dotfiles/starship/starship.toml ~/.config/starship.toml
-
-# AI エージェント グローバル指示 (single source = agents/AGENTS.md)
-mkdir -p ~/.claude ~/.codex ~/.copilot ~/.agents
-ln -sf ~/dotfiles/agents/AGENTS.md ~/.claude/CLAUDE.md
-ln -sf ~/dotfiles/agents/AGENTS.md ~/.codex/AGENTS.md
-ln -sf ~/dotfiles/agents/skills ~/.agents/skills
-ln -sf ../.agents/skills ~/.claude/skills
-ln -sf ../.agents/skills ~/.codex/skills
-ln -sf ../.agents/skills ~/.copilot/skills
-
-# GitHub Copilot CLI (グローバル設定。copilot-instructions.md は agents/AGENTS.md への symlink)
-ln -sf ~/dotfiles/copilot/copilot-instructions.md ~/.copilot/copilot-instructions.md
-ln -sf ~/dotfiles/copilot/scripts ~/.copilot/scripts
-
-# Git (共有設定)
-ln -sf ~/dotfiles/git/.gitconfig ~/.gitconfig
-# ユーザー固有設定 (user.name / email など) はテンプレートからコピーして編集
-cp ~/dotfiles/git/.gitconfig.local.example ~/.gitconfig.local
-$EDITOR ~/.gitconfig.local
+~/dotfiles/scripts/bootstrap.sh
 ```
 
-> **Note:** 共有 `~/.gitconfig` の末尾で `[include] path = ~/.gitconfig.local` を読み込むため、`user.name` / `user.email` / `credential.helper` などのマシン固有設定は `~/.gitconfig.local` に書きます。`.gitconfig.local` は **mydotfiles では管理しません**(マシンごと)。ファイルが存在しない場合は git は黙って無視するので安全です。
+このスクリプトは以下をまとめてやります:
 
-> **Note:** 既存ファイルがある場合は事前にバックアップを取ってください。`ln -sf` は既存のリンクを上書きしますが、実ファイル/ディレクトリがある場合は手動で退避が必要です。
+- zsh / tmux / emacs / starship / git の `~` 側 symlink
+- AGENTS.md の symlink (`~/.claude/CLAUDE.md` / `~/.codex/AGENTS.md` / `~/.copilot/copilot-instructions.md`)
+- `~/.gitconfig.local` を未作成なら example からコピー (既存があれば触らない)
+- `scripts/setup-skills.sh` を呼んで Agent Skills の per-skill symlink を配置
+
+idempotent (再実行 OK)、既存の実ファイル / 実ディレクトリは上書きしません (symlink のみ差し替え)。
+ユーザー固有 git 設定 (`user.name` / `user.email` / `credential.helper` 等) は
+`~/.gitconfig.local` を編集してください。
+
+> **Note:** 共有 `~/.gitconfig` の末尾で `[include] path = ~/.gitconfig.local` を読み込むため、マシン固有設定は `~/.gitconfig.local` に書きます。**mydotfiles では管理しません** (マシンごと)。ファイルが存在しない場合は git は黙って無視するので安全です。
+
+Skill だけ貼り直したいとき (新しい skill 追加時など) は `scripts/setup-skills.sh` を単独で叩けます。
 
 ### 3. 反映
 
