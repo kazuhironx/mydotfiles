@@ -1,6 +1,6 @@
 # mydotfiles
 
-個人用 dotfiles リポジトリ。Zsh / tmux / Emacs / GitHub Copilot CLI の設定をまとめて管理しています。
+個人用 dotfiles リポジトリ。Zsh / tmux / Emacs / Git に加えて、複数の AI コーディングエージェント (Claude Code / Codex / GitHub Copilot CLI) のグローバル指示を一元管理しています。
 
 ## 含まれる設定
 
@@ -12,7 +12,20 @@
 | `starship/starship.toml` | Starship プロンプト設定 |
 | `git/.gitconfig` | Git 共有設定 (delta / lfs / merge など) |
 | `git/.gitconfig.local.example` | ユーザー固有設定のテンプレート (user/credential など) |
-| `copilot/` | GitHub Copilot CLI 設定 (skills, hooks, scripts) |
+| `agents/AGENTS.md` | AI エージェント共通グローバル指示 (single source of truth) |
+| `claude/CLAUDE.md` | Claude Code 用 (symlink → `agents/AGENTS.md`) |
+| `codex/AGENTS.md` | Codex 用 (symlink → `agents/AGENTS.md`) |
+| `copilot/copilot-instructions.md` | GitHub Copilot CLI 用 (symlink → `agents/AGENTS.md`) |
+| `copilot/{hooks,scripts,skills}/` | Copilot CLI 固有の hook / script / skill |
+
+### AI エージェント設定の方針
+
+`agents/AGENTS.md` を **唯一のソース** として、各ツールの設定パスへは
+symlink を貼って同じ内容を参照させます。指示を更新するときは
+`agents/AGENTS.md` だけ編集すれば全ツールに反映されます。
+
+プロジェクト固有の指示は各リポジトリの `AGENTS.md` /
+`CLAUDE.md` / `.github/copilot-instructions.md` が優先されます。
 
 ## 依存ツール
 
@@ -78,7 +91,12 @@ ln -sf ~/dotfiles/emacs/init.el ~/.emacs.d/init.el
 mkdir -p ~/.config
 ln -sf ~/dotfiles/starship/starship.toml ~/.config/starship.toml
 
-# GitHub Copilot CLI (グローバル設定)
+# AI エージェント グローバル指示 (single source = agents/AGENTS.md)
+mkdir -p ~/.claude ~/.codex
+ln -sf ~/dotfiles/agents/AGENTS.md ~/.claude/CLAUDE.md
+ln -sf ~/dotfiles/agents/AGENTS.md ~/.codex/AGENTS.md
+
+# GitHub Copilot CLI (グローバル設定。copilot-instructions.md は agents/AGENTS.md への symlink)
 ln -sf ~/dotfiles/copilot ~/.config/github-copilot/
 
 # Git (共有設定)
