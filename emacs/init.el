@@ -56,10 +56,9 @@
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (global-display-line-numbers-mode 1)
-  (keyboard-translate ?\C-h ?\C-?)
-  ;; emacsclient -c で作った新フレームにも C-h=BS を適用する
-  (add-hook 'after-make-frame-functions
-            (lambda (_frame) (keyboard-translate ?\C-h ?\C-?)))
+  ;; C-h を Backspace に。keyboard-translate は端末ローカルで emacsclient の
+  ;; 新 tty に伝播しないため、フレーム非依存の key-translation-map を使う (help は f1)
+  (define-key key-translation-map [?\C-h] [?\C-?])
   ;; Disable suspend-frame (useless in tmux, dangerous in terminal)
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z"))
