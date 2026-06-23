@@ -22,7 +22,7 @@ fi
 
 export LANG=en_US.utf8
 export LC_TIME=C
-export EDITOR='emacsclient -nw -c -a ""'
+export EDITOR='emacsclient -nw -c -a emacs'
 
 # emacs keybind
 bindkey -e
