@@ -109,11 +109,6 @@ alias ls='ls --color -F'
 alias ll='ls -la'
 alias df='df -h'
 alias grep='grep --color=auto'
-alias copilot='copilot \
-     --allow-all-tools \
-     --deny-tool="shell(git push)" \
-     --deny-tool="shell(git push:*)" \
-     --deny-tool="shell(rm)"'
 
 # zsh plugins (after compinit)
 source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
