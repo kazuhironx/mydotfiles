@@ -115,5 +115,8 @@ source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
+# machine-local overrides (env vars, PATH tweaks) — not tracked by dotfiles
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
 # starship (must be last)
 eval "$(starship init zsh)"
