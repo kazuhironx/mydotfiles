@@ -43,6 +43,18 @@ symlink で配下に張ります。dir 全体を symlink にすると専用 skil
 られなくなるため、この方式にしています。新しい skill を後から足したいとき
 は適切な場所に dir を作って `setup-skills.sh` を再実行するだけで反映されます。
 
+#### crit (エージェント出力のレビュー)
+
+[crit](https://crit.md/) はエージェントの計画・差分・実行中ページをブラウザ上で
+インラインレビューする CLI です。`crit` / `crit-cli` の 2 skill を各ツールの
+`<tool>/skills/` に **専用 skill** として配置しています (共通 `agents/skills/`
+ではない)。upstream が author 名・実行方式 (Claude は background 実行、Codex は
+foreground) ・frontmatter をツールごとに変えており、内容が同一ではないためです。
+ファイルは [upstream の integrations](https://github.com/tomasz-tomczyk/crit/tree/main/integrations)
+から verbatim で vendoring しており、更新は各 skill の `ATTRIBUTION.md` 記載の
+ソースから再取得します。skill が動くには `crit` バイナリ本体のインストールが
+必要です ([依存ツール](#オプショナル) 参照)。
+
 プロジェクト固有の指示は各リポジトリの `AGENTS.md` /
 `CLAUDE.md` / `.github/copilot-instructions.md` が優先されます。
 
@@ -83,6 +95,7 @@ symlink で配下に張ります。dir 全体を symlink にすると専用 skil
 | `asdf` | バージョンマネージャ | [公式手順](https://asdf-vm.com/) |
 | `git-gtr` | git worktree 管理 | `go install github.com/nicr9/git-gtr@latest` |
 | GitHub Copilot CLI | AI アシスタント | `npm install -g @githubnext/github-copilot-cli` |
+| `crit` | エージェント出力のブラウザレビュー (`crit` / `crit-cli` skill が利用) | [公式手順](https://crit.md/) |
 
 ## インストール
 
