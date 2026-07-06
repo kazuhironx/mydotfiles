@@ -120,3 +120,8 @@ source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # starship (must be last)
 eval "$(starship init zsh)"
+
+# 点滅しないカーソルを毎プロンプトで強制 (\e[2 q = steady block)
+autoload -Uz add-zsh-hook
+_steady_cursor() { printf "\e[2 q" }
+add-zsh-hook precmd _steady_cursor

@@ -25,6 +25,7 @@ link() {
 # Shells and tools
 link "$DOTFILES_DIR/zsh/.zshrc"               "$HOME/.zshrc"
 link "$DOTFILES_DIR/tmux/.tmux.conf"          "$HOME/.tmux.conf"
+link "$DOTFILES_DIR/herdr/config.toml"         "$HOME/.config/herdr/config.toml"
 link "$DOTFILES_DIR/emacs/init.el"            "$HOME/.emacs.d/init.el"
 link "$DOTFILES_DIR/starship/starship.toml"   "$HOME/.config/starship.toml"
 link "$DOTFILES_DIR/git/.gitconfig"           "$HOME/.gitconfig"

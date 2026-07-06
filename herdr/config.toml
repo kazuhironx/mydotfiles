@@ -1,0 +1,68 @@
+# Keep this tracked config stable; Herdr's onboarding would otherwise edit it.
+onboarding = false
+
+[terminal]
+new_cwd = "follow"
+
+[theme]
+# Reuse the terminal palette instead of maintaining duplicate colors here.
+name = "terminal"
+
+[keys]
+prefix = "ctrl+t"
+
+# Preserve the tmux window/pane bindings.
+close_pane = "prefix+0"
+split_horizontal = "prefix+2"
+split_vertical = "prefix+3"
+cycle_pane_next = ["prefix+o", "prefix+ctrl+o"]
+close_tab = "prefix+k"
+new_tab = "prefix+c"
+last_pane = "prefix+t"
+
+# These defaults conflict with tmux's close-tab and logging keys.
+focus_pane_up = ""
+focus_pane_right = ""
+swap_pane_right = ""
+
+# Herdr's navigator is the closest equivalent to the all-window fzf picker.
+workspace_picker = ""
+goto = "prefix+w"
+
+# Keep direct Meta-number tab switching; Herdr indexes tabs only from 1 to 9.
+switch_tab = "alt+1..9"
+
+# Avoid colliding with the tmux-compatible prefix+o binding above.
+open_notification_target = "prefix+shift+o"
+
+[[keys.command]]
+key = "prefix+1"
+type = "shell"
+command = '"$HERDR_BIN_PATH" pane move "$HERDR_ACTIVE_PANE_ID" --new-tab --focus'
+description = "move pane to a new tab"
+
+[ui]
+mouse_capture = true
+prompt_new_tab_name = false
+pane_borders = true
+pane_gaps = false
+show_agent_labels_on_pane_borders = true
+agent_panel_sort = "priority"
+accent = "cyan"
+
+[ui.toast]
+delivery = "herdr"
+delay_seconds = 1
+
+[ui.toast.herdr]
+position = "bottom-right"
+
+[ui.sound]
+enabled = false
+
+[session]
+resume_agents_on_restore = true
+
+[advanced]
+# This is the nearest byte-based equivalent to tmux's 50,000-line history.
+scrollback_limit_bytes = 10000000
