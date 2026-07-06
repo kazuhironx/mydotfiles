@@ -8,7 +8,8 @@
 #   shared (symlinked) and tool-only (symlinked or real) skills coexist.
 #
 # Layout consumed:
-#   DOTFILES/agents/skills/<name>     -> linked into every tool's ~/.<tool>/skills/
+#   DOTFILES/agents/skills/<name>     -> linked into ~/.agents/skills/ and every
+#                                        tool's ~/.<tool>/skills/
 #   DOTFILES/claude/skills/<name>     -> linked into ~/.claude/skills/ only
 #   DOTFILES/codex/skills/<name>      -> linked into ~/.codex/skills/ only
 #   DOTFILES/copilot/skills/<name>    -> linked into ~/.copilot/skills/ only
@@ -21,7 +22,7 @@ set -euo pipefail
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 SHARED_SRC="$DOTFILES_DIR/agents/skills"
-TOOLS=(claude codex copilot)
+TOOLS=(agents claude codex copilot)
 
 ensure_real_dir() {
   local dir="$1"
@@ -61,7 +62,9 @@ for tool in "${TOOLS[@]}"; do
   target="$HOME/.${tool}/skills"
   ensure_real_dir "$target"
   link_dir_contents "$SHARED_SRC"                "$target"
-  link_dir_contents "$DOTFILES_DIR/$tool/skills" "$target"
+  if [[ "$tool" != "agents" ]]; then
+    link_dir_contents "$DOTFILES_DIR/$tool/skills" "$target"
+  fi
 done
 
 echo "done."
