@@ -64,6 +64,23 @@
   (global-unset-key (kbd "C-x C-z"))
   (global-set-key (kbd "C-o") #'dabbrev-expand))
 
+(use-package simple
+  :ensure nil
+  :config
+  (defun my/osc52-copy (text)
+    (let* ((encoded (base64-encode-string (encode-coding-string text 'utf-8-unix) t))
+           (sequence (format "\e]52;c;%s\a" encoded)))
+      (send-string-to-terminal
+       (if (getenv "TMUX")
+           (format "\ePtmux;\e%s\e\\" sequence)
+         sequence))))
+
+  ;; Terminal Emacs has no GUI clipboard provider; OSC52 lets the outer
+  ;; terminal own the clipboard while keeping normal kill-ring behavior.
+  (unless (display-graphic-p)
+    (setq interprogram-cut-function #'my/osc52-copy))
+  (setq select-enable-clipboard t))
+
 (use-package server
   :ensure nil
   :config
