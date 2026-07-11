@@ -109,6 +109,12 @@ alias ls='ls --color -F'
 alias ll='ls -la'
 alias df='df -h'
 alias grep='grep --color=auto'
+# hunk native multi-file review (sidebar / file jumps / top-to-bottom).
+# Richer than `git diff` via the pager: includes untracked files and can --watch
+# (git-backed input is reopenable; the pager's stdin is not, so watch lives here).
+alias hd='hunk diff --watch'   # working-tree changeset, auto-reloads on edit
+alias hds='hunk diff --staged'
+alias hs='hunk show'           # a commit / ref (immutable — no watch)
 
 # zsh plugins (after compinit)
 source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh

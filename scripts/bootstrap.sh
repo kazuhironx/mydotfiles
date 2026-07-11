@@ -28,6 +28,7 @@ link "$DOTFILES_DIR/tmux/.tmux.conf"          "$HOME/.tmux.conf"
 link "$DOTFILES_DIR/herdr/config.toml"         "$HOME/.config/herdr/config.toml"
 link "$DOTFILES_DIR/emacs/init.el"            "$HOME/.emacs.d/init.el"
 link "$DOTFILES_DIR/starship/starship.toml"   "$HOME/.config/starship.toml"
+link "$DOTFILES_DIR/hunk/config.toml"          "$HOME/.config/hunk/config.toml"
 link "$DOTFILES_DIR/git/.gitconfig"           "$HOME/.gitconfig"
 
 # AI agent global instructions (single source = agents/AGENTS.md)
