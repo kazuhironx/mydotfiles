@@ -41,6 +41,12 @@ type = "shell"
 command = '"$HERDR_BIN_PATH" pane move "$HERDR_ACTIVE_PANE_ID" --new-tab --focus'
 description = "move pane to a new tab"
 
+[[keys.command]]
+key = "prefix+d"
+type = "pane"
+command = "hunk diff"
+description = "run hunk"
+
 [ui]
 mouse_capture = true
 prompt_new_tab_name = false

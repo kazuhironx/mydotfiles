@@ -1,0 +1,34 @@
+# hunk: review-first terminal diff viewer (core.pager = "hunk pager")
+# https://github.com/modem-dev/hunk
+# Keys below are the full set hunk 0.17.0 accepts (see `$(hunk skill path)`/README).
+# NOTE: the file-tree / sidebar (multi-file file list) has no on/off key — it is a
+# fixed UI shown automatically in multi-file reviews and follows `mode`.
+
+# Match the terminal background instead of hard-coding light/dark here.
+theme = "auto"
+
+# Adapt split/stack to terminal width (delta was side-by-side; auto keeps that
+# on wide terminals but falls back to stacked when narrow).
+mode = "auto"
+
+vcs = "git"
+
+# Top navigation / menu bar (File / View / Themes…). Keep it visible.
+menu_bar = true
+
+# Show agent reasoning inline — this repo drives multiple coding agents.
+agent_notes = true
+
+line_numbers = true
+wrap_lines = false
+
+# MUST stay false: this config also applies to `hunk pager` (core.pager), whose
+# input is stdin and cannot be reopened — global watch breaks `git diff`.
+# Enable watch per-run on native git-backed reviews instead (see zsh `hd` alias).
+watch = false
+
+# Keep untracked files in `hunk diff` working-tree reviews.
+exclude_untracked = false
+
+# Use the theme's panel color rather than the terminal's transparent background.
+transparent_background = false
