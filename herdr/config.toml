@@ -18,7 +18,7 @@ split_vertical = "prefix+3"
 cycle_pane_next = ["prefix+o", "prefix+ctrl+o"]
 close_tab = "prefix+k"
 new_tab = "prefix+c"
-last_pane = "prefix+t"
+last_pane = ["prefix+t", "prefix+,"]
 
 # These defaults conflict with tmux's close-tab and logging keys.
 focus_pane_up = ""
@@ -32,8 +32,9 @@ goto = "prefix+w"
 # Keep direct Meta-number tab switching; Herdr indexes tabs only from 1 to 9.
 switch_tab = "alt+1..9"
 
-# Avoid colliding with the tmux-compatible prefix+o binding above.
-open_notification_target = "prefix+shift+o"
+# Emacs xref-style jump pair: prefix+. jumps to the notification source,
+# prefix+, (last_pane above) jumps back.
+open_notification_target = "prefix+."
 
 [[keys.command]]
 key = "prefix+1"

@@ -219,12 +219,12 @@ tmux はロールバック用に残し、Herdr と併用できます。
 | 上下 / 左右に分割 | `C-t 2` / `C-t 3` |
 | 次の pane | `C-t o` / `C-t C-o` |
 | tab を閉じる / 作る | `C-t k` / `C-t c` |
-| 直前の pane/tab | `C-t t` |
+| 直前の pane/tab | `C-t t` / `C-t ,` |
 | workspace・tab・pane picker | `C-t w` |
 | pane を zoom（最大化トグル） | `C-t z` |
 | hunk diff で現在の repo をレビュー | `C-t d` |
 | tab 1..9 へ直接移動 | `M-1` .. `M-9` |
-| 通知元へ移動 | `C-t O` |
+| 通知元へジャンプ（`C-t ,` で戻る） | `C-t .` |
 
 Herdr の tab index は 1..9 のため、tmux の `M-0` (window 10) に相当する直接移動はありません。
 tmux の status line と `@unread` は Herdr の sidebar、agent state、画面内通知へ置き換わります。
