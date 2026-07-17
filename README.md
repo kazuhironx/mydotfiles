@@ -221,6 +221,8 @@ tmux はロールバック用に残し、Herdr と併用できます。
 | tab を閉じる / 作る | `C-t k` / `C-t c` |
 | 直前の pane/tab | `C-t t` |
 | workspace・tab・pane picker | `C-t w` |
+| pane を zoom（最大化トグル） | `C-t z` |
+| hunk diff で現在の repo をレビュー | `C-t d` |
 | tab 1..9 へ直接移動 | `M-1` .. `M-9` |
 | 通知元へ移動 | `C-t O` |
 
