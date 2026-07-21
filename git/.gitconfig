@@ -17,3 +17,5 @@
 	conflictstyle = zdiff3
 [include]
 	path = ~/.gitconfig.local
+[alias]
+	lg = log --graph --oneline --decorate --all

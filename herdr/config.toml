@@ -6,8 +6,9 @@ new_cwd = "follow"
 
 [theme]
 # Reuse the terminal palette instead of maintaining duplicate colors here.
-name = "terminal"
+name = "dracula"
 
+auto_switch = false
 [keys]
 prefix = "ctrl+t"
 
@@ -18,7 +19,7 @@ split_vertical = "prefix+3"
 cycle_pane_next = ["prefix+o", "prefix+ctrl+o"]
 close_tab = "prefix+k"
 new_tab = "prefix+c"
-last_pane = ["prefix+t", "prefix+,"]
+last_pane = ["prefix+t", "prefix+comma"]
 
 # These defaults conflict with tmux's close-tab and logging keys.
 focus_pane_up = ""
@@ -34,7 +35,7 @@ switch_tab = "alt+1..9"
 
 # Emacs xref-style jump pair: prefix+. jumps to the notification source,
 # prefix+, (last_pane above) jumps back.
-open_notification_target = "prefix+."
+open_notification_target = "prefix+u"
 
 [[keys.command]]
 key = "prefix+1"
@@ -44,9 +45,11 @@ description = "move pane to a new tab"
 
 [[keys.command]]
 key = "prefix+d"
-type = "pane"
+type = "popup"
 command = "hunk diff"
 description = "run hunk"
+width = "90%"
+height = "90%"
 
 [ui]
 mouse_capture = true
