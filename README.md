@@ -1,100 +1,89 @@
 # mydotfiles
 
-個人用 dotfiles リポジトリ。Zsh / Herdr / Emacs / Git に加えて、複数の AI コーディングエージェント (Claude Code / Codex / GitHub Copilot CLI) のグローバル指示を一元管理しています。
+個人用のdotfilesリポジトリです。Zsh、Herdr、Emacs、Gitの設定に加えて、複数のAIコーディングエージェント（Claude Code、Codex、GitHub Copilot CLI）のグローバル指示をまとめて管理しています。
 
 ## 含まれる設定
 
 | ディレクトリ | 内容 |
 |---|---|
-| `zsh/.zshrc` | Zsh 設定 |
-| `herdr/config.toml` | Herdr 設定 (`C-t` prefix のキーバインド) |
-| `emacs/init.el` | Emacs 設定 |
-| `starship/starship.toml` | Starship プロンプト設定 |
-| `hunk/config.toml` | hunk 設定 (git の diff/pager 表示) |
-| `git/.gitconfig` | Git 共有設定 (hunk pager / lfs / merge など) |
-| `git/.gitconfig.local.example` | ユーザー固有設定のテンプレート (user/credential など) |
-| `agents/AGENTS.md` | AI エージェント共通グローバル指示 (single source of truth) |
-| `agents/skills/` | 全エージェント共通で使う Agent Skills (ツール非依存 methodology) |
-| `scripts/setup-agmsg.sh` | agmsg のインストール / 更新 |
-| `claude/CLAUDE.md` | Claude Code 用 (symlink → `agents/AGENTS.md`) |
-| `claude/skills/` | Claude Code 専用 Agent Skills |
-| `claude/settings.json` | Claude Code ユーザー設定 (`~/.claude/settings.json`) |
-| `claude/statusline.sh` | Claude Code の statusline スクリプト |
-| `codex/AGENTS.md` | Codex 用 (symlink → `agents/AGENTS.md`) |
-| `codex/skills/` | Codex 専用 Agent Skills |
-| `copilot/copilot-instructions.md` | GitHub Copilot CLI 用 (symlink → `agents/AGENTS.md`) |
-| `copilot/skills/` | GitHub Copilot CLI 専用 Agent Skills |
-| `scripts/bootstrap.sh` | clone 後 1 発で全設定をリンクする初期化スクリプト |
-| `scripts/setup-skills.sh` | Agent Skills の per-skill symlink を貼り直す (bootstrap から呼ばれる) |
+| `zsh/.zshrc` | Zshの設定 |
+| `herdr/config.toml` | Herdrの設定（`C-t` prefixのキーバインド） |
+| `emacs/init.el` | Emacsの設定 |
+| `starship/starship.toml` | Starshipのプロンプト設定 |
+| `hunk/config.toml` | hunkの設定（gitのdiffとpagerの表示） |
+| `git/.gitconfig` | Gitの共有設定（hunk pager、lfs、mergeなど） |
+| `git/.gitconfig.local.example` | ユーザー固有設定（userやcredential）のテンプレート |
+| `agents/AGENTS.md` | AIエージェント共通のグローバル指示（唯一のソース） |
+| `agents/skills/` | 全エージェントが共通で使うAgent Skills（ツールに依存しない手法） |
+| `scripts/setup-agmsg.sh` | agmsgのインストールと更新 |
+| `claude/CLAUDE.md` | Claude Code用（`agents/AGENTS.md`へのsymlink） |
+| `claude/skills/` | Claude Code専用のAgent Skills |
+| `claude/settings.json` | Claude Codeのユーザー設定（`~/.claude/settings.json`） |
+| `claude/statusline.sh` | Claude Codeのstatuslineスクリプト |
+| `codex/AGENTS.md` | Codex用（`agents/AGENTS.md`へのsymlink） |
+| `codex/skills/` | Codex専用のAgent Skills |
+| `copilot/copilot-instructions.md` | GitHub Copilot CLI用（`agents/AGENTS.md`へのsymlink） |
+| `copilot/skills/` | GitHub Copilot CLI専用のAgent Skills |
+| `scripts/bootstrap.sh` | clone後に1回実行し、全設定をリンクする初期化スクリプト |
+| `scripts/setup-skills.sh` | Agent Skillsのsymlinkをskill単位で張り直すスクリプト（bootstrapが呼ぶ） |
 
-### AI エージェント設定の方針
+### AIエージェント設定の方針
 
-`agents/AGENTS.md` を **唯一のソース** として、各ツールの設定パスへは
-symlink を貼って同じ内容を参照させます。指示を更新するときは
-`agents/AGENTS.md` だけ編集すれば全ツールに反映されます。
+`agents/AGENTS.md`を唯一のソースとし、各ツールの設定パスにsymlinkを張って同じ内容を読ませます。
+指示を更新するときは、`agents/AGENTS.md`だけを編集してください。
 
-Agent Skills は配置先で対象ツールを切り分けます:
+Agent Skillsは、置くディレクトリで配信先のツールを分けます。
 
-- `agents/skills/<name>/` — 全エージェントに配信される共通 skill
-- `claude/skills/<name>/`  — Claude Code のみに配信
-- `codex/skills/<name>/`   — Codex のみに配信
-- `copilot/skills/<name>/` — GitHub Copilot CLI のみに配信
+- `agents/skills/<name>/`は全エージェントに配信する共通skill
+- `claude/skills/<name>/`はClaude Codeだけに配信
+- `codex/skills/<name>/`はCodexだけに配信
+- `copilot/skills/<name>/`はGitHub Copilot CLIだけに配信
 
-`~/.agents/skills/` と各ツールの `~/.<tool>/skills/` は **実ディレクトリ** にして、`scripts/setup-skills.sh`
-が `agents/skills/` の共通 skill と `<tool>/skills/` の専用 skill を per-skill
-symlink で配下に張ります。dir 全体を symlink にすると専用 skill を同居させ
-られなくなるため、この方式にしています。新しい skill を後から足したいとき
-は適切な場所に dir を作って `setup-skills.sh` を再実行するだけで反映されます。
+`~/.agents/skills/`と各ツールの`~/.<tool>/skills/`は実ディレクトリのままにします。
+`scripts/setup-skills.sh`は、`agents/skills/`の共通skillと`<tool>/skills/`の専用skillを、skill単位のsymlinkとしてその中に張ります。
+ディレクトリ全体をsymlinkにすると、専用skillを同じ場所に置けなくなるため、この方式にしています。
+skillを追加するときは、適切な場所にディレクトリを作って`setup-skills.sh`を再実行してください。
 
-#### crit (エージェント出力のレビュー)
+#### crit（エージェント出力のレビュー）
 
-[crit](https://crit.md/) はエージェントの計画・差分・実行中ページをブラウザ上で
-インラインレビューする CLI です。`crit` / `crit-cli` の 2 skill を各ツールの
-`<tool>/skills/` に **専用 skill** として配置しています (共通 `agents/skills/`
-ではない)。upstream が author 名・実行方式 (Claude は background 実行、Codex は
-foreground) ・frontmatter をツールごとに変えており、内容が同一ではないためです。
-ファイルは [upstream の integrations](https://github.com/tomasz-tomczyk/crit/tree/main/integrations)
-から verbatim で vendoring しており、更新は各 skill の `ATTRIBUTION.md` 記載の
-ソースから再取得します。skill が動くには `crit` バイナリ本体のインストールが
-必要です ([依存ツール](#オプショナル) 参照)。
+[crit](https://crit.md/)は、エージェントの計画、差分、実行中のページをブラウザ上でインラインレビューするCLIです。
+`crit`と`crit-cli`の2つのskillは、各ツールの`<tool>/skills/`に専用skillとして置いています。
+upstreamがツールごとにauthor名、実行方式（Claudeはbackground実行、Codexはforeground実行）、frontmatterを変えているためです。
+ファイルは[upstreamのintegrations](https://github.com/tomasz-tomczyk/crit/tree/main/integrations)から変更せずに取り込んでいます。
+更新するときは、各skillの`ATTRIBUTION.md`に書いたソースから取り直してください。
+skillを動かすには`crit`本体のインストールも必要です（[依存ツール](#オプショナル)を参照）。
 
-#### hunk-review (差分レビューセッションへのエージェント参加)
+#### hunk-review（差分レビューセッションへのエージェント参加）
 
-[hunk](https://www.hunk.dev/) のライブ diff セッションへエージェントが `hunk session *`
-経由で参加し、該当行にインラインコメントを刺す skill です。`hunk-review` 1 skill を
-**共通 `agents/skills/`** に配置し、全ツールへ配信しています (crit と違い upstream の
-SKILL.md がツール非依存で内容が同一のため)。`hunkdiff` npm パッケージ同梱の
-`$(hunk skill path)` から verbatim で vendoring し、更新は `ATTRIBUTION.md` 記載の
-手順で再取得します。使い方: 端末で `hunk diff` を起動しておき、エージェントに
-「hunk セッションをレビューして」と依頼すると、指摘が差分の該当行脇に表示されます
-(`hunk/config.toml` の `agent_notes = true` が表示を有効化)。
+[hunk](https://www.hunk.dev/)のライブdiffセッションに、エージェントが`hunk session *`経由で参加し、該当行にインラインコメントを付けるskillです。
+`hunk-review`は共通の`agents/skills/`に置き、全ツールへ配信しています。
+critと違って、upstreamのSKILL.mdがツールに依存せず、内容が同じだからです。
+`hunkdiff` npmパッケージに同梱された`$(hunk skill path)`から変更せずに取り込み、更新は`ATTRIBUTION.md`に書いた手順で行います。
+使うときは、端末で`hunk diff`を起動しておき、エージェントに「hunkセッションをレビューして」と依頼してください。
+指摘が差分の該当行の横に表示されます（`hunk/config.toml`の`agent_notes = true`で表示を有効にしています）。
 
-#### explainer / explainer-book / first-reader (人間向けの説明資料)
+#### explainer、explainer-book、first-reader（人間向けの説明資料）
 
-[mizchi/explainer](https://github.com/mizchi/explainer) の 3 skill を **共通
-`agents/skills/`** に verbatim で vendoring しています。`explainer` は読み手 1 人の
-ペルソナに合わせた速習資料を、引用出力と図を道具で検証しながら書きます。
-`explainer-book` はその章立て版で、`../explainer/scripts/` を呼ぶため 2 つは同じ
-ディレクトリに並べて置く必要があります。`first-reader` は公開前の下書きを模擬読者に
-読ませて離脱点を報告する skill です (書き直しはしない)。explainer 系のスクリプトは
-資料を置くリポジトリ側に npm 依存が要ります ([依存ツール](#オプショナル) 参照)。
-更新は各 `ATTRIBUTION.md` 記載のコミットから再取得します。
+[mizchi/explainer](https://github.com/mizchi/explainer)の3つのskillを、共通の`agents/skills/`に変更せずに取り込んでいます。
+`explainer`は、読み手1人のペルソナに合わせた速習資料を書き、引用した出力と図を道具で検証します。
+`explainer-book`はその章立て版です。`../explainer/scripts/`を呼ぶので、2つのskillは同じディレクトリに並べて置いてください。
+`first-reader`は、公開前の下書きを模擬読者に読ませ、読むのをやめた箇所を報告するskillです。下書きの書き直しはしません。
+explainer系のスクリプトを動かすには、資料を置くリポジトリにnpmパッケージを入れる必要があります（[依存ツール](#オプショナル)を参照）。
+更新するときは、各`ATTRIBUTION.md`に書いたコミットから取り直してください。
 
-#### yomiyasu (AI っぽい日本語のリライト)
+#### yomiyasu（AIっぽい日本語のリライト）
 
-[nanaism/yomiyasu](https://github.com/nanaism/yomiyasu)
-([解説記事](https://zenn.dev/algoartis/articles/0b1c731881b25c)) を **共通
-`agents/skills/`** に vendoring しています。AI が生成した日本語の非生物主語・比喩動詞・
-名詞化・装飾過多を書き直し、同梱の `scripts/yomiyasu_lint.py` (Python 3 標準ライブラリのみ)
-で静的に採点します。`design-doc` も日本語の文体はこの skill に従います。
+[nanaism/yomiyasu](https://github.com/nanaism/yomiyasu)（[解説記事](https://zenn.dev/algoartis/articles/0b1c731881b25c)）を、共通の`agents/skills/`に取り込んでいます。
+AIが生成した日本語の非生物主語、比喩動詞、名詞化、過剰な装飾を書き直すskillです。
+同梱の`scripts/yomiyasu_lint.py`（Python 3の標準ライブラリだけで動く）で、文章を静的に採点できます。
+`design-doc`も、日本語の文体はこのskillに従います。
 
-プロジェクト固有の指示は各リポジトリの `AGENTS.md` /
-`CLAUDE.md` / `.github/copilot-instructions.md` が優先されます。
-Claude Code (v2.1.277 以降) はプロジェクトに `CLAUDE.md` が無ければ `AGENTS.md` を
-読むため、プロジェクト側は `AGENTS.md` 1 本で全ツールに効きます。ユーザーレベルの
-`~/.claude/CLAUDE.md` は AGENTS.md フォールバックの対象外なので symlink を維持します。
-Agent Skills も Claude Code は `~/.agents/skills/` を探索しない (`~/.claude/skills/` のみ)
-ため、per-skill symlink の配線は従来どおり必要です。
+プロジェクト固有の指示としては、各リポジトリの`AGENTS.md`、`CLAUDE.md`、`.github/copilot-instructions.md`が優先です。
+Claude Code（v2.1.277以降）は、プロジェクトに`CLAUDE.md`が無ければ`AGENTS.md`を読みます。
+そのため、プロジェクト側は`AGENTS.md`を1つ置けば全ツールに読ませられます。
+ユーザーレベルの`~/.claude/CLAUDE.md`はこのフォールバックの対象外なので、symlinkを残しています。
+Claude Codeは`~/.agents/skills/`も探索せず、`~/.claude/skills/`だけを読みます。
+このため、skill単位のsymlinkは引き続き必要です。
 
 ## 依存ツール
 
@@ -103,19 +92,19 @@ Agent Skills も Claude Code は `~/.agents/skills/` を探索しない (`~/.cla
 | ツール | 用途 | インストール |
 |--------|------|-------------|
 | `zsh` | シェル | `sudo apt install zsh` |
-| `herdr` | Agent-aware ターミナルマルチプレクサ | `curl -fsSL https://herdr.dev/install.sh \| sh` |
-| `emacs` (30+) | エディタ | [ビルド手順](#6-emacs-302-のビルド-ubuntu-2204) |
-| `git` (2.35+) | バージョン管理 (`merge.conflictstyle = zdiff3` に必要) | `sudo apt install git` |
-| `hunk` | diff/pager 表示 (`core.pager = hunk pager`, Node 18+ 必須) | `npm i -g hunkdiff` ([詳細](#7-hunk-のインストール)) |
+| `herdr` | エージェント対応のターミナルマルチプレクサ | `curl -fsSL https://herdr.dev/install.sh \| sh` |
+| `emacs`（30以上） | エディタ | [ビルド手順](#6-emacs-302-のビルド-ubuntu-2204) |
+| `git`（2.35以上） | バージョン管理（`merge.conflictstyle = zdiff3`に必要） | `sudo apt install git` |
+| `hunk` | diffとpagerの表示（`core.pager = hunk pager`で使う。Node 18以上が必要） | `npm i -g hunkdiff`（[詳細](#7-hunk-のインストール)） |
 | `git-lfs` | Large File Storage | `sudo apt install git-lfs` |
-| `fzf` | ファジー検索 (zsh 履歴) | `sudo apt install fzf` |
-| `fd-find` | ファイル名検索 (consult-fd, affe) | `sudo apt install fd-find` |
-| `ripgrep` | ファイル内容検索 (consult-ripgrep) | `sudo apt install ripgrep` |
+| `fzf` | ファジー検索（zshの履歴） | `sudo apt install fzf` |
+| `fd-find` | ファイル名検索（consult-fd、affe） | `sudo apt install fd-find` |
+| `ripgrep` | ファイル内容の検索（consult-ripgrep） | `sudo apt install ripgrep` |
 | `starship` | プロンプト | `curl -sS https://starship.rs/install.sh \| sh` |
 | `zsh-autosuggestions` | 入力補完 | `sudo apt install zsh-autosuggestions` |
 | `zsh-syntax-highlighting` | シンタックスハイライト | `sudo apt install zsh-syntax-highlighting` |
 
-### LSP サーバー (言語別)
+### LSPサーバー（言語別）
 
 | ツール | 言語 | インストール |
 |--------|------|-------------|
@@ -127,65 +116,66 @@ Agent Skills も Claude Code は `~/.agents/skills/` を探索しない (`~/.cla
 
 | ツール | 用途 | インストール |
 |--------|------|-------------|
-| `ghq` | リポジトリ管理 (consult-ghq) | `go install github.com/x-motemen/ghq@latest` |
-| `emacs-lsp-booster` | eglot 高速化 | [GitHub](https://github.com/blahgeek/emacs-lsp-booster) |
-| `pandoc` | Markdown プレビュー | `sudo apt install pandoc` |
+| `ghq` | リポジトリ管理（consult-ghq） | `go install github.com/x-motemen/ghq@latest` |
+| `emacs-lsp-booster` | eglotの高速化 | [GitHub](https://github.com/blahgeek/emacs-lsp-booster) |
+| `pandoc` | Markdownのプレビュー | `sudo apt install pandoc` |
 | `asdf` | バージョンマネージャ | [公式手順](https://asdf-vm.com/) |
-| `git-gtr` | git worktree 管理 | `git clone https://github.com/coderabbitai/git-worktree-runner ~/dev/github.com/coderabbitai/git-worktree-runner && ln -s ~/dev/github.com/coderabbitai/git-worktree-runner/bin/git-gtr ~/.local/bin/` ([GitHub](https://github.com/coderabbitai/git-worktree-runner)) |
-| GitHub Copilot CLI | AI アシスタント | `npm install -g @githubnext/github-copilot-cli` |
-| `crit` | エージェント出力のブラウザレビュー (`crit` / `crit-cli` skill が利用) | [公式手順](https://crit.md/) |
-| `sqlite3` | agmsg のメッセージ保存 | `sudo apt install sqlite3` |
-| Node 24+ / npm | `explainer` 系 skill のスクリプト。資料を置くリポジトリで `npm i -D @mizchi/vlmkit @mizchi/vlmkit-anim marked playwright` (Mermaid の図なら `mermaid`、アイコンなら `@iconify-json/lucide @iconify-json/logos` も) | [公式](https://nodejs.org/) |
-| Python 3 | `first-reader` / `yomiyasu` のスクリプト (標準ライブラリのみ) | `sudo apt install python3` |
+| `git-gtr` | git worktreeの管理 | `git clone https://github.com/coderabbitai/git-worktree-runner ~/dev/github.com/coderabbitai/git-worktree-runner && ln -s ~/dev/github.com/coderabbitai/git-worktree-runner/bin/git-gtr ~/.local/bin/`（[GitHub](https://github.com/coderabbitai/git-worktree-runner)） |
+| GitHub Copilot CLI | AIアシスタント | `npm install -g @githubnext/github-copilot-cli` |
+| `crit` | エージェント出力のブラウザレビュー（`crit`と`crit-cli`のskillが使う） | [公式手順](https://crit.md/) |
+| `sqlite3` | agmsgのメッセージ保存 | `sudo apt install sqlite3` |
+| Node 24以上とnpm | `explainer`系skillのスクリプト。資料を置くリポジトリで`npm i -D @mizchi/vlmkit @mizchi/vlmkit-anim marked playwright`を実行する（Mermaidの図を使うなら`mermaid`、アイコンを使うなら`@iconify-json/lucide @iconify-json/logos`も入れる） | [公式](https://nodejs.org/) |
+| Python 3 | `first-reader`と`yomiyasu`のスクリプト（標準ライブラリだけで動く） | `sudo apt install python3` |
 
 ## インストール
 
 ### 1. リポジトリをクローン
 
-`git/.gitconfig` の `ghq.root = ~/dev` に合わせ、ghq と同じ配置に clone します
-(ghq があれば `ghq get kazuhironx/mydotfiles` でも同じ場所に入ります)。
-各スクリプトは自分の位置からリポジトリを解決するので、別の場所に置いても動きます。
+`git/.gitconfig`の`ghq.root = ~/dev`に合わせて、ghqと同じ場所にcloneします。
+ghqが入っていれば、`ghq get kazuhironx/mydotfiles`でも同じ場所に入ります。
+各スクリプトは自分の位置からリポジトリのパスを求めるので、別の場所に置いても問題ありません。
 
 ```bash
 git clone https://github.com/kazuhironx/mydotfiles.git ~/dev/github.com/kazuhironx/mydotfiles
 cd ~/dev/github.com/kazuhironx/mydotfiles
 ```
 
-### 2. bootstrap スクリプトを実行
+### 2. bootstrapスクリプトを実行
 
-クローン後、付属の `scripts/bootstrap.sh` を 1 回叩けば全配線が済みます。
+clone後に`scripts/bootstrap.sh`を1回実行すると、すべてのリンクが張られます。
 
 ```bash
 scripts/bootstrap.sh
 ```
 
-このスクリプトは以下をまとめてやります:
+このスクリプトは次の作業をします。
 
-- zsh / Herdr / emacs / starship / hunk / git の `~` 側 symlink
-- AGENTS.md の symlink (`~/.claude/CLAUDE.md` / `~/.codex/AGENTS.md` / `~/.copilot/copilot-instructions.md`)
-- Claude Code の `~/.claude/settings.json` と `~/.claude/statusline.sh` の symlink
-- `~/.gitconfig.local` を未作成なら example からコピー (既存があれば触らない)
-- `scripts/setup-skills.sh` を呼んで Agent Skills の per-skill symlink を配置
+- zsh、Herdr、emacs、starship、hunk、gitの設定ファイルへのsymlinkを`~`側に張る
+- `AGENTS.md`へのsymlinkを張る（`~/.claude/CLAUDE.md`、`~/.codex/AGENTS.md`、`~/.copilot/copilot-instructions.md`）
+- Claude Codeの`~/.claude/settings.json`と`~/.claude/statusline.sh`へのsymlinkを張る
+- `~/.gitconfig.local`が無ければexampleからコピーする（既にあれば変更しない）
+- `scripts/setup-skills.sh`を呼び、Agent Skillsのsymlinkをskill単位で張る
 
-idempotent (再実行 OK)、既存の実ファイル / 実ディレクトリは上書きしません (symlink のみ差し替え)。
-ユーザー固有 git 設定 (`user.name` / `user.email` / `credential.helper` 等) は
-`~/.gitconfig.local` を編集してください。
+スクリプトは何度実行しても同じ結果になります。
+既存の実ファイルや実ディレクトリは上書きせず、symlinkだけを張り替えます。
+ユーザー固有のgit設定（`user.name`、`user.email`、`credential.helper`など）は`~/.gitconfig.local`に書いてください。
 
-> **Note:** 共有 `~/.gitconfig` の末尾で `[include] path = ~/.gitconfig.local` を読み込むため、マシン固有設定は `~/.gitconfig.local` に書きます。**mydotfiles では管理しません** (マシンごと)。ファイルが存在しない場合は git は黙って無視するので安全です。
+> **Note:** 共有の`~/.gitconfig`は末尾で`[include] path = ~/.gitconfig.local`を読み込みます。マシン固有の設定は`~/.gitconfig.local`に書き、mydotfilesでは管理しません。このファイルが無くても、gitはエラーを出さずに無視します。
 
-Skill だけ貼り直したいとき (新しい skill 追加時など) は `scripts/setup-skills.sh` を単独で叩けます。削除した skill の古い symlink もここで掃除されます。
+skillのリンクだけを張り直したいとき（skillを追加したときなど）は、`scripts/setup-skills.sh`を単独で実行してください。
+削除したskillの古いsymlinkも、このときに消えます。
 
-### Agent Team (agmsg)
+### Agent Team（agmsg）
 
-[agmsg](https://github.com/fujibee/agmsg) の最新 `main` をインストールまたは更新します。
-実行時 DB と team 登録は Git 管理外の `~/.agents/skills/agmsg/` に置きます。
+`scripts/setup-agmsg.sh`は、[agmsg](https://github.com/fujibee/agmsg)の最新の`main`をインストールまたは更新します。
+実行時のDBとteamの登録情報の置き場所は、Gitで管理しない`~/.agents/skills/agmsg/`です。
 
 ```bash
 sudo apt install sqlite3
 scripts/setup-agmsg.sh
 ```
 
-Herdr 内で対象プロジェクトを開き、Claude Code を起動して Fable に切り替えます。
+Herdrの中で対象のプロジェクトを開き、Claude Codeを起動してモデルをFableに切り替えます。
 
 ```bash
 claude
@@ -195,7 +185,7 @@ claude
 /model fable
 ```
 
-続いて、役割とモデルをプロンプトで指定します。構成はタスクごとに変更できます。
+続いて、各エージェントの役割とモデルをプロンプトで指定してください。構成はタスクごとに変えられます。
 
 ```text
 あなたはこのプロジェクトの orchestrator です。
@@ -219,8 +209,8 @@ qa の指摘があれば implementer に修正を依頼し、再度 qa を実行
 Issue #123 を実装してください。
 ```
 
-agmsg は Agent 間の通信と role 管理、Herdr は pane とプロセス管理を担当します。
-agmsg の `spawn` は使わず、Herdr で pane を作成して各 Agent CLI を起動します。
+agmsgはエージェント間の通信と役割の管理を、Herdrはpaneとプロセスの管理を受け持ちます。
+agmsgの`spawn`は使わず、Herdrでpaneを作って各エージェントのCLIを起動してください。
 
 ### 3. 反映
 
@@ -234,33 +224,33 @@ herdr server reload-config
 
 ### 4. Herdr
 
-`herdr` を実行すると default session を起動または再接続します。
+`herdr`を実行すると、default sessionを起動するか、既存のsessionに再接続します。
 
 主なキーバインドは次のとおりです。
 
 | 操作 | キー |
 |---|---|
 | prefix | `C-t` |
-| pane を閉じる | `C-t 0` |
-| pane を新規 tab へ分離 | `C-t 1` |
-| 上下 / 左右に分割 | `C-t 2` / `C-t 3` |
-| 次の pane | `C-t o` / `C-t C-o` |
-| tab を閉じる / 作る | `C-t k` / `C-t c` |
-| 直前の pane/tab | `C-t t` / `C-t ,` |
-| workspace・tab・pane picker | `C-t w` |
-| pane を zoom（最大化トグル） | `C-t z` |
-| hunk diff で現在の repo をレビュー | `C-t d` |
-| tab 1..9 へ直接移動 | `M-1` .. `M-9` |
-| 通知元へジャンプ（`C-t ,` で戻る） | `C-t .` |
+| paneを閉じる | `C-t 0` |
+| paneを新しいtabへ移す | `C-t 1` |
+| 上下に分割、左右に分割 | `C-t 2`、`C-t 3` |
+| 次のpaneへ移る | `C-t o`、`C-t C-o` |
+| tabを閉じる、tabを作る | `C-t k`、`C-t c` |
+| 直前のpaneまたはtabへ戻る | `C-t t`、`C-t ,` |
+| workspace、tab、paneのpicker | `C-t w` |
+| paneの最大化を切り替える | `C-t z` |
+| 現在のrepoをhunk diffでレビューする | `C-t d` |
+| tab 1から9へ直接移る | `M-1`から`M-9` |
+| 通知元へ移る（`C-t ,`で戻る） | `C-t .` |
 
-tab への直接移動は 1..9 までです。
-継続的な pane ログの機能はないため、必要なコマンド側で `tee` などを使用します。
+tabへの直接移動は1から9までです。
+Herdrにはpaneの出力を続けて記録する機能が無いので、記録が必要なコマンドは`tee`などに通してください。
 
-マウス選択はそのままコピーされます。
-Herdr がマウスを capture している間に端末側の右クリックメニューを使う場合は、`Shift` を押しながら右クリックします。
+マウスで選択した範囲は、そのままクリップボードにコピーされます。
+Herdrがマウス操作を受け取っている間に端末の右クリックメニューを開くには、`Shift`を押しながら右クリックしてください。
 
-Agent のセッション復元精度を上げる場合は、Herdr のインストール後に対象だけ integration を追加します。
-各コマンドは既存の Agent hook 設定を更新するため、実行前に差分を確認してください。
+Herdrのインストール後に対象のエージェントのintegrationを追加すると、エージェントのセッションをより正確に復元できます。
+各コマンドは既存のエージェントのhook設定を書き換えるので、実行前に差分を確認してください。
 
 ```bash
 herdr integration install claude
@@ -270,7 +260,7 @@ herdr integration install copilot
 
 ### 5. Emacs: Tree-sitter グラマーのインストール
 
-Emacs 30 の Tree-sitter モード (`c-ts-mode`, `go-ts-mode` 等) を使うには、初回起動後に以下を実行してください。
+Emacs 30のTree-sitterモード（`c-ts-mode`、`go-ts-mode`など）を使うには、初回起動後に次のコマンドを実行してください。
 
 ```
 M-x treesit-install-language-grammar RET c
@@ -283,7 +273,7 @@ M-x treesit-install-language-grammar RET json
 
 ### 6. Emacs 30.2 のビルド (Ubuntu 22.04)
 
-ソースからビルドする場合の手順です。native-comp / GTK3 / GnuTLS / Tree-sitter を有効にしています。
+ソースからビルドする場合の手順です。native-comp、GTK3、GnuTLS、Tree-sitterを有効にしています。
 
 ```bash
 # 依存パッケージ (主なもの)
@@ -313,13 +303,15 @@ make -j$(nproc)
 sudo make install
 ```
 
-> **Note:** GCC 12 の `-O2` は `xdisp.c` の native-comp 中にICE (Internal Compiler Error) を起こすことがあるため、`-O1` を使用しています。
+> **Note:** GCC 12の`-O2`は、`xdisp.c`をnative-compするときにICE（Internal Compiler Error）を起こすことがあります。そのため`-O1`を使っています。
 
-> **Note:** `init.el` で実際に使う機能 (native-comp, tree-sitter, eglot, magit, GUI) のみ有効化しています。画像拡張 (`--with-imagemagick`) や動的モジュール (`--with-modules`) が必要な場合は configure オプションと対応する `lib*-dev` パッケージを追加してください。Emacs 30 では JSON サポートが内蔵化されたため `--with-json` / `libjansson-dev` は不要です。
+> **Note:** configureでは、`init.el`が実際に使う機能（native-comp、tree-sitter、eglot、magit、GUI）だけを有効にしています。画像拡張（`--with-imagemagick`）や動的モジュール（`--with-modules`）が必要なら、configureのオプションと対応する`lib*-dev`パッケージを追加してください。Emacs 30はJSONのサポートを内蔵したので、`--with-json`と`libjansson-dev`は不要です。
 
 ### 7. hunk のインストール
 
-`~/.gitconfig` で `core.pager = hunk pager` を指定しているため、[hunk](https://www.hunk.dev/) が無いと `git diff` / `git log` / `git show` が動きません。Node.js 18+ が必要です。設定は `hunk/config.toml` を `~/.config/hunk/config.toml` に symlink して共有します (bootstrap が配線)。
+`~/.gitconfig`で`core.pager = hunk pager`を指定しているので、[hunk](https://www.hunk.dev/)が無いと`git diff`、`git log`、`git show`が動きません。
+hunkにはNode.js 18以上が必要です。
+設定はbootstrapが`hunk/config.toml`を`~/.config/hunk/config.toml`にsymlinkして共有します。
 
 #### npm
 
@@ -346,9 +338,7 @@ hunk --version
 git diff   # hunk のレビュー UI で side-by-side / 行番号付きに表示されればOK
 ```
 
-> **Note:** hunk はフルスクリーンの TUI ビューアのため、delta の `--color-only` のような
-> インラインフィルタ用途 (`interactive.diffFilter`) には使えません。旧 `[interactive]` /
-> `[delta]` セクションは削除し、`git add -p` は git 既定の色付き diff にフォールバックします。
+> **Note:** hunkはフルスクリーンのTUIビューアなので、deltaの`--color-only`のようなインラインフィルタ（`interactive.diffFilter`）としては使えません。旧来の`[interactive]`と`[delta]`のセクションは削除しました。`git add -p`はgit既定の色付きdiffで表示されます。
 
 ## ライセンス
 
