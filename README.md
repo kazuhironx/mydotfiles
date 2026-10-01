@@ -1,14 +1,13 @@
 # mydotfiles
 
-個人用 dotfiles リポジトリ。Zsh / tmux / Herdr / Emacs / Git に加えて、複数の AI コーディングエージェント (Claude Code / Codex / GitHub Copilot CLI) のグローバル指示を一元管理しています。
+個人用 dotfiles リポジトリ。Zsh / Herdr / Emacs / Git に加えて、複数の AI コーディングエージェント (Claude Code / Codex / GitHub Copilot CLI) のグローバル指示を一元管理しています。
 
 ## 含まれる設定
 
 | ディレクトリ | 内容 |
 |---|---|
 | `zsh/.zshrc` | Zsh 設定 |
-| `tmux/.tmux.conf` | tmux 設定 |
-| `herdr/config.toml` | Herdr 設定 (tmux 互換キーバインド) |
+| `herdr/config.toml` | Herdr 設定 (`C-t` prefix のキーバインド) |
 | `emacs/init.el` | Emacs 設定 |
 | `starship/starship.toml` | Starship プロンプト設定 |
 | `hunk/config.toml` | hunk 設定 (git の diff/pager 表示) |
@@ -19,11 +18,12 @@
 | `scripts/setup-agmsg.sh` | agmsg のインストール / 更新 |
 | `claude/CLAUDE.md` | Claude Code 用 (symlink → `agents/AGENTS.md`) |
 | `claude/skills/` | Claude Code 専用 Agent Skills |
+| `claude/settings.json` | Claude Code ユーザー設定 (`~/.claude/settings.json`) |
+| `claude/statusline.sh` | Claude Code の statusline スクリプト |
 | `codex/AGENTS.md` | Codex 用 (symlink → `agents/AGENTS.md`) |
 | `codex/skills/` | Codex 専用 Agent Skills |
 | `copilot/copilot-instructions.md` | GitHub Copilot CLI 用 (symlink → `agents/AGENTS.md`) |
 | `copilot/skills/` | GitHub Copilot CLI 専用 Agent Skills |
-| `copilot/{hooks,scripts}/` | Copilot CLI 固有の hook / script |
 | `scripts/bootstrap.sh` | clone 後 1 発で全設定をリンクする初期化スクリプト |
 | `scripts/setup-skills.sh` | Agent Skills の per-skill symlink を貼り直す (bootstrap から呼ばれる) |
 
@@ -103,13 +103,12 @@ Agent Skills も Claude Code は `~/.agents/skills/` を探索しない (`~/.cla
 | ツール | 用途 | インストール |
 |--------|------|-------------|
 | `zsh` | シェル | `sudo apt install zsh` |
-| `tmux` (3.6+) | ターミナルマルチプレクサ | `sudo apt install tmux` |
 | `herdr` | Agent-aware ターミナルマルチプレクサ | `curl -fsSL https://herdr.dev/install.sh \| sh` |
 | `emacs` (30+) | エディタ | [ビルド手順](#6-emacs-302-のビルド-ubuntu-2204) |
 | `git` (2.35+) | バージョン管理 (`merge.conflictstyle = zdiff3` に必要) | `sudo apt install git` |
 | `hunk` | diff/pager 表示 (`core.pager = hunk pager`, Node 18+ 必須) | `npm i -g hunkdiff` ([詳細](#7-hunk-のインストール)) |
 | `git-lfs` | Large File Storage | `sudo apt install git-lfs` |
-| `fzf` | ファジー検索 (zsh履歴, tmux picker) | `sudo apt install fzf` |
+| `fzf` | ファジー検索 (zsh 履歴) | `sudo apt install fzf` |
 | `fd-find` | ファイル名検索 (consult-fd, affe) | `sudo apt install fd-find` |
 | `ripgrep` | ファイル内容検索 (consult-ripgrep) | `sudo apt install ripgrep` |
 | `starship` | プロンプト | `curl -sS https://starship.rs/install.sh \| sh` |
@@ -132,7 +131,7 @@ Agent Skills も Claude Code は `~/.agents/skills/` を探索しない (`~/.cla
 | `emacs-lsp-booster` | eglot 高速化 | [GitHub](https://github.com/blahgeek/emacs-lsp-booster) |
 | `pandoc` | Markdown プレビュー | `sudo apt install pandoc` |
 | `asdf` | バージョンマネージャ | [公式手順](https://asdf-vm.com/) |
-| `git-gtr` | git worktree 管理 | `go install github.com/nicr9/git-gtr@latest` |
+| `git-gtr` | git worktree 管理 | `git clone https://github.com/coderabbitai/git-worktree-runner ~/dev/github.com/coderabbitai/git-worktree-runner && ln -s ~/dev/github.com/coderabbitai/git-worktree-runner/bin/git-gtr ~/.local/bin/` ([GitHub](https://github.com/coderabbitai/git-worktree-runner)) |
 | GitHub Copilot CLI | AI アシスタント | `npm install -g @githubnext/github-copilot-cli` |
 | `crit` | エージェント出力のブラウザレビュー (`crit` / `crit-cli` skill が利用) | [公式手順](https://crit.md/) |
 | `sqlite3` | agmsg のメッセージ保存 | `sudo apt install sqlite3` |
@@ -143,8 +142,13 @@ Agent Skills も Claude Code は `~/.agents/skills/` を探索しない (`~/.cla
 
 ### 1. リポジトリをクローン
 
+`git/.gitconfig` の `ghq.root = ~/dev` に合わせ、ghq と同じ配置に clone します
+(ghq があれば `ghq get kazuhironx/mydotfiles` でも同じ場所に入ります)。
+各スクリプトは自分の位置からリポジトリを解決するので、別の場所に置いても動きます。
+
 ```bash
-git clone https://github.com/kazuhironx/mydotfiles.git ~/dotfiles
+git clone https://github.com/kazuhironx/mydotfiles.git ~/dev/github.com/kazuhironx/mydotfiles
+cd ~/dev/github.com/kazuhironx/mydotfiles
 ```
 
 ### 2. bootstrap スクリプトを実行
@@ -152,13 +156,14 @@ git clone https://github.com/kazuhironx/mydotfiles.git ~/dotfiles
 クローン後、付属の `scripts/bootstrap.sh` を 1 回叩けば全配線が済みます。
 
 ```bash
-~/dotfiles/scripts/bootstrap.sh
+scripts/bootstrap.sh
 ```
 
 このスクリプトは以下をまとめてやります:
 
-- zsh / tmux / Herdr / emacs / starship / git の `~` 側 symlink
+- zsh / Herdr / emacs / starship / hunk / git の `~` 側 symlink
 - AGENTS.md の symlink (`~/.claude/CLAUDE.md` / `~/.codex/AGENTS.md` / `~/.copilot/copilot-instructions.md`)
+- Claude Code の `~/.claude/settings.json` と `~/.claude/statusline.sh` の symlink
 - `~/.gitconfig.local` を未作成なら example からコピー (既存があれば触らない)
 - `scripts/setup-skills.sh` を呼んで Agent Skills の per-skill symlink を配置
 
@@ -168,7 +173,7 @@ idempotent (再実行 OK)、既存の実ファイル / 実ディレクトリは�
 
 > **Note:** 共有 `~/.gitconfig` の末尾で `[include] path = ~/.gitconfig.local` を読み込むため、マシン固有設定は `~/.gitconfig.local` に書きます。**mydotfiles では管理しません** (マシンごと)。ファイルが存在しない場合は git は黙って無視するので安全です。
 
-Skill だけ貼り直したいとき (新しい skill 追加時など) は `scripts/setup-skills.sh` を単独で叩けます。
+Skill だけ貼り直したいとき (新しい skill 追加時など) は `scripts/setup-skills.sh` を単独で叩けます。削除した skill の古い symlink もここで掃除されます。
 
 ### Agent Team (agmsg)
 
@@ -177,7 +182,7 @@ Skill だけ貼り直したいとき (新しい skill 追加時など) は `scri
 
 ```bash
 sudo apt install sqlite3
-~/dotfiles/scripts/setup-agmsg.sh
+scripts/setup-agmsg.sh
 ```
 
 Herdr 内で対象プロジェクトを開き、Claude Code を起動して Fable に切り替えます。
@@ -223,16 +228,12 @@ agmsg の `spawn` は使わず、Herdr で pane を作成して各 Agent CLI を
 # Zsh — 新しいシェルを開くか:
 source ~/.zshrc
 
-# tmux — セッション内で:
-tmux source-file ~/.tmux.conf
-
 # Herdr — 起動中なら:
 herdr server reload-config
 ```
 
-### 4. Herdr への移行
+### 4. Herdr
 
-tmux はロールバック用に残し、Herdr と併用できます。
 `herdr` を実行すると default session を起動または再接続します。
 
 主なキーバインドは次のとおりです。
@@ -252,9 +253,8 @@ tmux はロールバック用に残し、Herdr と併用できます。
 | tab 1..9 へ直接移動 | `M-1` .. `M-9` |
 | 通知元へジャンプ（`C-t ,` で戻る） | `C-t .` |
 
-Herdr の tab index は 1..9 のため、tmux の `M-0` (window 10) に相当する直接移動はありません。
-tmux の status line と `@unread` は Herdr の sidebar、agent state、画面内通知へ置き換わります。
-`pipe-pane` に相当する継続的な pane ログはないため、必要なコマンド側で `tee` などを使用します。
+tab への直接移動は 1..9 までです。
+継続的な pane ログの機能はないため、必要なコマンド側で `tee` などを使用します。
 
 マウス選択はそのままコピーされます。
 Herdr がマウスを capture している間に端末側の右クリックメニューを使う場合は、`Shift` を押しながら右クリックします。
