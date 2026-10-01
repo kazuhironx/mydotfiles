@@ -59,7 +59,7 @@
   ;; C-h を Backspace に。keyboard-translate は端末ローカルで emacsclient の
   ;; 新 tty に伝播しないため、フレーム非依存の key-translation-map を使う (help は f1)
   (define-key key-translation-map [?\C-h] [?\C-?])
-  ;; Disable suspend-frame (useless in tmux, dangerous in terminal)
+  ;; Disable suspend-frame (dangerous in terminal)
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-x C-z"))
   (global-set-key (kbd "C-o") #'dabbrev-expand))
@@ -70,10 +70,7 @@
   (defun my/osc52-copy (text)
     (let* ((encoded (base64-encode-string (encode-coding-string text 'utf-8-unix) t))
            (sequence (format "\e]52;c;%s\a" encoded)))
-      (send-string-to-terminal
-       (if (getenv "TMUX")
-           (format "\ePtmux;\e%s\e\\" sequence)
-         sequence))))
+      (send-string-to-terminal sequence)))
 
   ;; Terminal Emacs has no GUI clipboard provider; OSC52 lets the outer
   ;; terminal own the clipboard while keeping normal kill-ring behavior.

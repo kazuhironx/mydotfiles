@@ -12,7 +12,7 @@ auto_switch = false
 [keys]
 prefix = "ctrl+t"
 
-# Preserve the tmux window/pane bindings.
+# Emacs-style C-x 0/2/3 muscle memory under the C-t prefix.
 close_pane = "prefix+0"
 split_horizontal = "prefix+2"
 split_vertical = "prefix+3"
@@ -21,12 +21,12 @@ close_tab = "prefix+k"
 new_tab = "prefix+c"
 last_pane = ["prefix+t", "prefix+comma"]
 
-# These defaults conflict with tmux's close-tab and logging keys.
+# focus_pane_up defaults to prefix+k (taken by close_tab above); the rest are unused.
 focus_pane_up = ""
 focus_pane_right = ""
 swap_pane_right = ""
 
-# Herdr's navigator is the closest equivalent to the all-window fzf picker.
+# goto covers workspaces, tabs and panes in one picker, so it takes prefix+w.
 workspace_picker = ""
 goto = "prefix+w"
 
@@ -74,5 +74,5 @@ enabled = false
 resume_agents_on_restore = true
 
 [advanced]
-# This is the nearest byte-based equivalent to tmux's 50,000-line history.
+# Roughly 50,000 lines of history, expressed in bytes.
 scrollback_limit_bytes = 10000000
