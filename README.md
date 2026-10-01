@@ -86,10 +86,7 @@ SKILL.md がツール非依存で内容が同一のため)。`hunkdiff` npm パ�
 ([解説記事](https://zenn.dev/algoartis/articles/0b1c731881b25c)) を **共通
 `agents/skills/`** に vendoring しています。AI が生成した日本語の非生物主語・比喩動詞・
 名詞化・装飾過多を書き直し、同梱の `scripts/yomiyasu_lint.py` (Python 3 標準ライブラリのみ)
-で静的に採点します。`japanese-tech-writing` は執筆時の論証・構成の規範、yomiyasu は
-既存文の脱臭という役割分担です。ただし太字の扱い (japanese-tech-writing は用語の初出を
-太字にする、yomiyasu は太字を削る) が食い違い、yomiyasu 自身も類似 skill との干渉を
-注意しているため、併用時はどちらに従うかを依頼時に指定してください。
+で静的に採点します。`design-doc` も日本語の文体はこの skill に従います。
 
 プロジェクト固有の指示は各リポジトリの `AGENTS.md` /
 `CLAUDE.md` / `.github/copilot-instructions.md` が優先されます。

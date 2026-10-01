@@ -9,7 +9,7 @@ description: DesignDoc.md（設計文書）の執筆・維持規範。refactorin
 
 ## 併用する規範
 
-作業前に `../japanese-tech-writing/SKILL.md` と `../cognitive-rhythm-writing/SKILL.md` を読む。
+日本語の文体は `../yomiyasu/SKILL.md` に従う。
 
 ## いつこの skill を使うか
 
@@ -110,6 +110,6 @@ Yes なら該当節だけを更新する。No なら DesignDoc に触らない�
 
 ## 書き終えたら
 
-- japanese-tech-writing の点検リスト（LLM っぽい表現、論証の厳密さ、冗長）で自己点検する。
+- `python3 ../yomiyasu/scripts/yomiyasu_lint.py DesignDoc.md` で AI っぽい表現を点検する（警告は見直し候補であり、正当な専門用語は残す）。
 - README との重複（具体値の二重記載）がないか確認する。
 - mermaid がレンダリング可能か確認する（GitHub の preview か mermaid.live 相当の構文チェック）。
