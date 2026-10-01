@@ -6,4 +6,4 @@
 	email = you@example.com
 
 [credential]
-	helper = store
+	helper = cache --timeout=3600

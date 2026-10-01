@@ -1,3 +1,4 @@
 *.elc
+# Per-project hook files that agmsg drops when an agent joins a team from this repo
 .codex/hooks.json
-.github/
+.github/hooks/agmsg.json
