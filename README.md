@@ -69,8 +69,35 @@ SKILL.md がツール非依存で内容が同一のため)。`hunkdiff` npm パ�
 「hunk セッションをレビューして」と依頼すると、指摘が差分の該当行脇に表示されます
 (`hunk/config.toml` の `agent_notes = true` が表示を有効化)。
 
+#### explainer / explainer-book / first-reader (人間向けの説明資料)
+
+[mizchi/explainer](https://github.com/mizchi/explainer) の 3 skill を **共通
+`agents/skills/`** に verbatim で vendoring しています。`explainer` は読み手 1 人の
+ペルソナに合わせた速習資料を、引用出力と図を道具で検証しながら書きます。
+`explainer-book` はその章立て版で、`../explainer/scripts/` を呼ぶため 2 つは同じ
+ディレクトリに並べて置く必要があります。`first-reader` は公開前の下書きを模擬読者に
+読ませて離脱点を報告する skill です (書き直しはしない)。explainer 系のスクリプトは
+資料を置くリポジトリ側に npm 依存が要ります ([依存ツール](#オプショナル) 参照)。
+更新は各 `ATTRIBUTION.md` 記載のコミットから再取得します。
+
+#### yomiyasu (AI っぽい日本語のリライト)
+
+[nanaism/yomiyasu](https://github.com/nanaism/yomiyasu)
+([解説記事](https://zenn.dev/algoartis/articles/0b1c731881b25c)) を **共通
+`agents/skills/`** に vendoring しています。AI が生成した日本語の非生物主語・比喩動詞・
+名詞化・装飾過多を書き直し、同梱の `scripts/yomiyasu_lint.py` (Python 3 標準ライブラリのみ)
+で静的に採点します。`japanese-tech-writing` は執筆時の論証・構成の規範、yomiyasu は
+既存文の脱臭という役割分担です。ただし太字の扱い (japanese-tech-writing は用語の初出を
+太字にする、yomiyasu は太字を削る) が食い違い、yomiyasu 自身も類似 skill との干渉を
+注意しているため、併用時はどちらに従うかを依頼時に指定してください。
+
 プロジェクト固有の指示は各リポジトリの `AGENTS.md` /
 `CLAUDE.md` / `.github/copilot-instructions.md` が優先されます。
+Claude Code (v2.1.277 以降) はプロジェクトに `CLAUDE.md` が無ければ `AGENTS.md` を
+読むため、プロジェクト側は `AGENTS.md` 1 本で全ツールに効きます。ユーザーレベルの
+`~/.claude/CLAUDE.md` は AGENTS.md フォールバックの対象外なので symlink を維持します。
+Agent Skills も Claude Code は `~/.agents/skills/` を探索しない (`~/.claude/skills/` のみ)
+ため、per-skill symlink の配線は従来どおり必要です。
 
 ## 依存ツール
 
@@ -112,6 +139,8 @@ SKILL.md がツール非依存で内容が同一のため)。`hunkdiff` npm パ�
 | GitHub Copilot CLI | AI アシスタント | `npm install -g @githubnext/github-copilot-cli` |
 | `crit` | エージェント出力のブラウザレビュー (`crit` / `crit-cli` skill が利用) | [公式手順](https://crit.md/) |
 | `sqlite3` | agmsg のメッセージ保存 | `sudo apt install sqlite3` |
+| Node 24+ / npm | `explainer` 系 skill のスクリプト。資料を置くリポジトリで `npm i -D @mizchi/vlmkit @mizchi/vlmkit-anim marked playwright` (Mermaid の図なら `mermaid`、アイコンなら `@iconify-json/lucide @iconify-json/logos` も) | [公式](https://nodejs.org/) |
+| Python 3 | `first-reader` / `yomiyasu` のスクリプト (標準ライブラリのみ) | `sudo apt install python3` |
 
 ## インストール
 
