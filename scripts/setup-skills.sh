@@ -14,7 +14,8 @@
 #   DOTFILES/codex/skills/<name>      -> linked into ~/.codex/skills/ only
 #   DOTFILES/copilot/skills/<name>    -> linked into ~/.copilot/skills/ only
 #
-# Idempotent: re-running replaces existing symlinks of the same name.
+# Idempotent: re-running replaces existing symlinks of the same name and prunes
+# links into this repo whose skill was removed.
 # Safe: refuses to overwrite a destination that is a real (non-symlink) file/dir.
 
 set -euo pipefail
@@ -58,9 +59,27 @@ link_dir_contents() {
   shopt -u nullglob
 }
 
+# Only links into this repo are pruned; links owned by other installers stay.
+prune_dangling() {
+  local dest_dir="$1" link target
+  shopt -s nullglob
+  for link in "$dest_dir"/*; do
+    [[ -L "$link" && ! -e "$link" ]] || continue
+    target="$(readlink "$link")"
+    case "$target" in
+      "$DOTFILES_DIR"/*|"$HOME"/dotfiles/*)
+        rm "$link"
+        echo "prune:   $link -> $target"
+        ;;
+    esac
+  done
+  shopt -u nullglob
+}
+
 for tool in "${TOOLS[@]}"; do
   target="$HOME/.${tool}/skills"
   ensure_real_dir "$target"
+  prune_dangling "$target"
   link_dir_contents "$SHARED_SRC"                "$target"
   if [[ "$tool" != "agents" ]]; then
     link_dir_contents "$DOTFILES_DIR/$tool/skills" "$target"
