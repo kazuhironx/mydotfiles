@@ -24,7 +24,6 @@ link() {
 
 # Shells and tools
 link "$DOTFILES_DIR/zsh/.zshrc"               "$HOME/.zshrc"
-link "$DOTFILES_DIR/tmux/.tmux.conf"          "$HOME/.tmux.conf"
 link "$DOTFILES_DIR/herdr/config.toml"         "$HOME/.config/herdr/config.toml"
 link "$DOTFILES_DIR/emacs/init.el"            "$HOME/.emacs.d/init.el"
 link "$DOTFILES_DIR/starship/starship.toml"   "$HOME/.config/starship.toml"
@@ -35,7 +34,10 @@ link "$DOTFILES_DIR/git/.gitconfig"           "$HOME/.gitconfig"
 link "$DOTFILES_DIR/agents/AGENTS.md"                       "$HOME/.claude/CLAUDE.md"
 link "$DOTFILES_DIR/agents/AGENTS.md"                       "$HOME/.codex/AGENTS.md"
 link "$DOTFILES_DIR/copilot/copilot-instructions.md"        "$HOME/.copilot/copilot-instructions.md"
-link "$DOTFILES_DIR/copilot/scripts"                        "$HOME/.copilot/scripts"
+
+# Claude Code user settings
+link "$DOTFILES_DIR/claude/settings.json"                   "$HOME/.claude/settings.json"
+link "$DOTFILES_DIR/claude/statusline.sh"                   "$HOME/.claude/statusline.sh"
 
 # Per-skill symlinks (shared + tool-specific) into each tool's skills/
 "$DOTFILES_DIR/scripts/setup-skills.sh"
