@@ -1,11 +1,12 @@
 path=($HOME/dev/bin $HOME/.local/bin $HOME/.cargo/bin $HOME/go/bin /usr/local/sbin /usr/local/bin /usr/local/go/bin /usr/sbin /usr/bin /sbin /bin $path)
 typeset -U path
 
-(( $+commands[git] )) && eval "$(git gtr completion zsh 2>/dev/null)"
-
-_gtr_init="${XDG_CACHE_HOME:-$HOME/.cache}/gtr/init-gtr.zsh"
-[[ -f "$_gtr_init" ]] || eval "$(git gtr init zsh)" || true
-source "$_gtr_init" 2>/dev/null || true; unset _gtr_init
+if (( $+commands[git-gtr] )); then
+    eval "$(git gtr completion zsh 2>/dev/null)"
+    _gtr_init="${XDG_CACHE_HOME:-$HOME/.cache}/gtr/init-gtr.zsh"
+    [[ -f "$_gtr_init" ]] || eval "$(git gtr init zsh)" || true
+    source "$_gtr_init" 2>/dev/null || true; unset _gtr_init
+fi
 
 #asdf setup
 if [[ -f "$HOME/.asdf/asdf.sh" ]]; then
@@ -84,17 +85,14 @@ setopt interactive_comments # '#' starts comment
 unsetopt promptcr           # print if line is one line
 
 # disable flow control (C-s: XOFF, C-q: XON)
-stty stop undef
-stty start undef
+if [[ -t 0 ]]; then
+    stty stop undef
+    stty start undef
+fi
 
 # completion
 zstyle ':completion:*:default' menu select=1
 zstyle ':completion:*' use-cache true
-
-# load bash_profile
-if [ -f ~/.bash_profile ]; then 
-    . ~/.bash_profile;
-fi
 
 # setup ls coloring
 LIST_COLOR=('di=34;1' 'ln=35' 'so=32' 'ex=32;1' 'bd=46;34' 'cd=43;34')
@@ -117,15 +115,18 @@ alias hds='hunk diff --staged'
 alias hs='hunk show'           # a commit / ref (immutable — no watch)
 
 # zsh plugins (after compinit)
-source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
-source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+if [[ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
+    source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
+fi
+[[ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] &&
+    source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # machine-local overrides (env vars, PATH tweaks) — not tracked by dotfiles
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
 # starship (must be last)
-eval "$(starship init zsh)"
+(( $+commands[starship] )) && eval "$(starship init zsh)"
 
 # 点滅しないカーソルを毎プロンプトで強制 (\e[2 q = steady block)
 autoload -Uz add-zsh-hook
