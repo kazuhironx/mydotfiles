@@ -23,7 +23,8 @@ fi
 
 export LANG=en_US.utf8
 export LC_TIME=C
-export EDITOR='emacsclient -nw -c -a emacs'
+# -a emacs だと server 不在時に -nw が引き継がれず GUI が開いて端末が待ち続けるため、daemon を自動起動させる
+export EDITOR='emacsclient -nw -a ""'
 
 # emacs keybind
 bindkey -e
