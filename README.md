@@ -121,7 +121,8 @@ Claude Codeは`~/.agents/skills/`も探索せず、`~/.claude/skills/`だけを�
 | `pandoc` | Markdownのプレビュー | `sudo apt install pandoc` |
 | `asdf` | バージョンマネージャ | [公式手順](https://asdf-vm.com/) |
 | `git-gtr` | git worktreeの管理 | `git clone https://github.com/coderabbitai/git-worktree-runner ~/dev/github.com/coderabbitai/git-worktree-runner && ln -s ~/dev/github.com/coderabbitai/git-worktree-runner/bin/git-gtr ~/.local/bin/`（[GitHub](https://github.com/coderabbitai/git-worktree-runner)） |
-| GitHub Copilot CLI | AIアシスタント | `npm install -g @githubnext/github-copilot-cli` |
+| GitHub Copilot CLI | AIアシスタント | `npm install -g @github/copilot`（初回は`copilot`内で`/login`） |
+| `gh` | GitHub CLI（エージェントがPR・CI・issueの操作に使う） | [公式手順](https://github.com/cli/cli#installation)（sudoなしなら[Releases](https://github.com/cli/cli/releases)の`linux_amd64.tar.gz`から`bin/gh`を`~/.local/bin`へ） |
 | `crit` | エージェント出力のブラウザレビュー（`crit`と`crit-cli`のskillが使う） | [公式手順](https://crit.md/) |
 | `sqlite3` | agmsgのメッセージ保存 | `sudo apt install sqlite3` |
 | Node 24以上とnpm | `explainer`系skillのスクリプト。資料を置くリポジトリで`npm i -D @mizchi/vlmkit @mizchi/vlmkit-anim marked playwright`を実行する（Mermaidの図を使うなら`mermaid`、アイコンを使うなら`@iconify-json/lucide @iconify-json/logos`も入れる） | [公式](https://nodejs.org/) |
