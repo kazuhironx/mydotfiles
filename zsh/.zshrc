@@ -23,8 +23,10 @@ fi
 
 export LANG=en_US.utf8
 export LC_TIME=C
-# -a emacs だと server 不在時に -nw が引き継がれず GUI が開いて端末が待ち続けるため、daemon を自動起動させる
-export EDITOR='emacsclient -nw -a ""'
+# -a emacs だと server 不在時に -nw が引き継がれず GUI が開いて端末が待ち続けるため、daemon を自動起動させる。
+# -a "" は EDITOR をシェルを通さず分割する呼び出し元 (Claude Code 等) で "" が文字どおり渡るので env で指定する
+export ALTERNATE_EDITOR=''
+export EDITOR='emacsclient -nw'
 
 # emacs keybind
 bindkey -e
