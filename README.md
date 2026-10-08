@@ -127,6 +127,7 @@ Claude Codeは`~/.agents/skills/`も探索せず、`~/.claude/skills/`だけを�
 | `sqlite3` | agmsgのメッセージ保存 | `sudo apt install sqlite3` |
 | Node 24以上とnpm | `explainer`系skillのスクリプト。資料を置くリポジトリで`npm i -D @mizchi/vlmkit @mizchi/vlmkit-anim marked playwright`を実行する（Mermaidの図を使うなら`mermaid`、アイコンを使うなら`@iconify-json/lucide @iconify-json/logos`も入れる） | [公式](https://nodejs.org/) |
 | Python 3 | `first-reader`と`yomiyasu`のスクリプト（標準ライブラリだけで動く） | `sudo apt install python3` |
+| `ime-watch` | ibus-mozcの入力モードを入力位置の横に表示し、`~/.cache/ime-state`に書き出す（`claude/statusline.sh`が先頭に表示する） | [GitHub](https://github.com/kazuhironx/ime-watch)のREADMEの手順で`install.sh`を実行 |
 
 ## インストール
 

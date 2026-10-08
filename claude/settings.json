@@ -4,7 +4,7 @@
     "type": "command",
     "command": "~/.claude/statusline.sh",
     "padding": 0,
-    "refreshInterval": 30
+    "refreshInterval": 2
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true

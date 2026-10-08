@@ -80,7 +80,15 @@ cwd=$(j '.workspace.current_dir // .cwd // "."')
 wt=$(j '.worktree.name // empty')
 pr=$(j '.pr.number // empty')
 
-line1="$(C 111)${B}${model}${R}"
+# ime-watch が書く Mozc の入力モード。全角のまま / を打つ事故を防ぐため先頭に置く
+ime=$(cat "${XDG_CACHE_HOME:-$HOME/.cache}/ime-state" 2>/dev/null)
+line1=""
+case "$ime" in
+  "") ;;
+  A)  line1+="${DIM}[A]${R} " ;;
+  *)  line1+="$(C 16)\033[48;5;215m${B} ${ime} ${R} " ;;
+esac
+line1+="$(C 111)${B}${model}${R}"
 [ -n "$effort" ] && [ "$effort" != "null" ] && line1+=" $(C 140)·${effort}${R}"
 [ "$fast" = "true" ] && line1+=" $(C 220)⚡${R}"
 [ "$thinking" = "false" ] && line1+=" ${DIM}nothink${R}"
