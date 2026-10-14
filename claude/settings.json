@@ -17,5 +17,17 @@
   },
   "theme": "dark",
   "agentPushNotifEnabled": true,
-  "advisorModel": "fable"
+  "advisorModel": "fable",
+  "remoteControlAtStartup": true,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "inputNeededNotifEnabled": true,
+  "showMessageTimestamps": true,
+  "spinnerTipsEnabled": false,
+  "fastModePerSessionOptIn": true,
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-5-5"
+  }
 }
