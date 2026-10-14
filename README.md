@@ -27,6 +27,7 @@
 | `scripts/bootstrap.sh` | clone後に1回実行し、全設定をリンクする初期化スクリプト |
 | `scripts/setup-skills.sh` | Agent Skillsのsymlinkをskill単位で張り直すスクリプト（bootstrapが呼ぶ） |
 | `mozc/keymap-msime-hhkb-ime.tsv` | Mozcのキー設定（MS-IME準拠＋無変換=IMEオフ、変換=IMEオン） |
+| `environment.d/60-ibus-sync-mode.conf` | ibus-gtk4 1.5.29でBS後に未確定文字が画面に残る不具合の回避（`IBUS_ENABLE_SYNC_MODE=2`） |
 | `mozc/90-hhkb-ime.hwdb` | HHKBのLang1/Lang2を変換/無変換に読み替えるudev hwdb |
 
 ### AIエージェント設定の方針
@@ -354,6 +355,8 @@ sudo systemd-hwdb update && sudo udevadm trigger --sysname-match="event*"
 ```
 
 Mozcのプロパティを開き、「一般」タブのキー設定で「編集」を押します。「インポート」で`mozc/keymap-msime-hhkb-ime.tsv`を読み込み、最後に`ibus restart`を実行します。
+
+`environment.d/60-ibus-sync-mode.conf`はbootstrapが`~/.config/environment.d/`にリンクします。Ubuntu 24.04のibus-gtk4 1.5.29は、GTK4アプリでキー処理が同期モードになるのが既定です。このモードでは、BSで未確定文字を消しても最後の1文字が画面に残ります（Ghosttyやgnome-text-editorで発生し、Chromeでは起きません）。ハイブリッドモード（`2`）にすると直ります。次回ログインから有効です。すぐに効かせるには、`systemctl --user set-environment IBUS_ENABLE_SYNC_MODE=2`を実行してからGhosttyを完全に終了して起動し直します。
 
 ## ライセンス
 

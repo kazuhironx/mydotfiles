@@ -29,6 +29,7 @@ link "$DOTFILES_DIR/emacs/init.el"            "$HOME/.emacs.d/init.el"
 link "$DOTFILES_DIR/starship/starship.toml"   "$HOME/.config/starship.toml"
 link "$DOTFILES_DIR/hunk/config.toml"          "$HOME/.config/hunk/config.toml"
 link "$DOTFILES_DIR/git/.gitconfig"           "$HOME/.gitconfig"
+link "$DOTFILES_DIR/environment.d/60-ibus-sync-mode.conf" "$HOME/.config/environment.d/60-ibus-sync-mode.conf"
 
 # AI agent global instructions (single source = agents/AGENTS.md)
 link "$DOTFILES_DIR/agents/AGENTS.md"                       "$HOME/.claude/CLAUDE.md"
