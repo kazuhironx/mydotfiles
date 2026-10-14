@@ -1,0 +1,5 @@
+# HHKB keymap tool sends Lang1/Lang2 (Mac かな/英数) for IME-ON/OFF.
+# Mozc cannot bind Hangul keysyms, so turn them into Henkan/Muhenkan.
+evdev:name:HHKB-Hybrid*:*
+ KEYBOARD_KEY_70090=henkan
+ KEYBOARD_KEY_70091=muhenkan

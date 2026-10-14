@@ -26,6 +26,8 @@
 | `copilot/skills/` | GitHub Copilot CLI専用のAgent Skills |
 | `scripts/bootstrap.sh` | clone後に1回実行し、全設定をリンクする初期化スクリプト |
 | `scripts/setup-skills.sh` | Agent Skillsのsymlinkをskill単位で張り直すスクリプト（bootstrapが呼ぶ） |
+| `mozc/keymap-msime-hhkb-ime.tsv` | Mozcのキー設定（MS-IME準拠＋無変換=IMEオフ、変換=IMEオン） |
+| `mozc/90-hhkb-ime.hwdb` | HHKBのLang1/Lang2を変換/無変換に読み替えるudev hwdb |
 
 ### AIエージェント設定の方針
 
@@ -341,6 +343,17 @@ git diff   # hunk のレビュー UI で side-by-side / 行番号付きに表示
 ```
 
 > **Note:** hunkはフルスクリーンのTUIビューアなので、deltaの`--color-only`のようなインラインフィルタ（`interactive.diffFilter`）としては使えません。旧来の`[interactive]`と`[delta]`のセクションは削除しました。`git add -p`はgit既定の色付きdiffで表示されます。
+
+### 8. HHKBのIMEキー（Mozc）
+
+HHKBはキーマップ変更ツールで、右◇をLang2（IMEオフ）、右外AltをLang1（IMEオン）にしてあります。WindowsはこのままでIMEのオン/オフになります。Linuxではこの2つのキーがHangul/Hangul_Hanjaとして届き、Mozcに割り当てられません。そこでhwdbで変換/無変換に読み替えてから、Mozcのキー設定で割り当てます。Alt+`をやめたのは、Chromium系のPWA（Teams、Outlookなど）でAltの単押しと見なされ、メニューが開いてしまうためです。
+
+```bash
+sudo cp mozc/90-hhkb-ime.hwdb /etc/udev/hwdb.d/
+sudo systemd-hwdb update && sudo udevadm trigger --sysname-match="event*"
+```
+
+Mozcのプロパティを開き、「一般」タブのキー設定で「編集」を押します。「インポート」で`mozc/keymap-msime-hhkb-ime.tsv`を読み込み、最後に`ibus restart`を実行します。
 
 ## ライセンス
 
