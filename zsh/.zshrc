@@ -21,7 +21,12 @@ else
     compinit -C
 fi
 
-export LANG=en_US.utf8
+# 未生成の locale を指すと C 扱いになり、less が UTF-8 を <E3> のバイナリ表示にするため、無ければ C.utf8 に落とす。
+if locale -a 2>/dev/null | grep -qix 'en_US.utf-\?8'; then
+    export LANG=en_US.utf8
+else
+    export LANG=C.utf8
+fi
 export LC_TIME=C
 # -a emacs だと server 不在時に -nw が引き継がれず GUI が開いて端末が待ち続けるため、daemon を自動起動させる。
 # -a "" は EDITOR をシェルを通さず分割する呼び出し元 (Claude Code 等) で "" が文字どおり渡るので env で指定する
