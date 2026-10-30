@@ -10,21 +10,21 @@
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash '/home/kmz/.claude/hooks/herdr-agent-state.sh' session",
-            "timeout": 10
-          }
-        ]
-      },
-      {
         "hooks": [
           {
             "type": "command",
             "command": "f=\"$HOME/.claude/skills/progress-dashboard/scripts/progress.py\"; [ -f \"$f\" ] || exit 0; python3 \"$f\" hook session-start",
             "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "^(startup|resume|clear|compact|fork)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/home/kmz/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
           }
         ]
       }
