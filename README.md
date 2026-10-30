@@ -17,7 +17,7 @@
 | `agents/skills/` | 全エージェントが共通で使うAgent Skills（ツールに依存しない手法） |
 | `scripts/setup-agmsg.sh` | agmsgのインストールと更新 |
 | `claude/CLAUDE.md` | Claude Code用（`agents/AGENTS.md`へのsymlink） |
-| `claude/skills/` | Claude Code専用のAgent Skills |
+| `claude/skills/` | Claude Code専用のAgent Skills（crit、impeccable、progress-dashboardなど） |
 | `claude/settings.json` | Claude Codeのユーザー設定（`~/.claude/settings.json`） |
 | `claude/statusline.sh` | Claude Codeのstatuslineスクリプト |
 | `codex/AGENTS.md` | Codex用（`agents/AGENTS.md`へのsymlink） |
@@ -80,6 +80,60 @@ explainer系のスクリプトを動かすには、資料を置くリポジト�
 AIが生成した日本語の非生物主語、比喩動詞、名詞化、過剰な装飾を書き直すskillです。
 同梱の`scripts/yomiyasu_lint.py`（Python 3の標準ライブラリだけで動く）で、文章を静的に採点できます。
 `design-doc`も、日本語の文体はこのskillに従います。
+
+#### explain-before-shorten（説明を組み立ててから短くする）
+
+[okazukiさんのZenn記事](https://zenn.dev/microsoft/articles/explain-before-shorten)に載っているSKILL.mdを、共通の`agents/skills/`に変更せずに取り込んでいます。
+短くしすぎて意味が通らない説明文を、口頭で説明するつもりで組み立て直してから、条件を残したまま短くするskillです。
+記事にライセンスの記載はないため、`ATTRIBUTION.md`には取得日と記事の更新日だけを書いています。
+
+yomiyasuと併用するときは、explain-before-shortenで論理と前提を整えてから、yomiyasuで文体を直します。
+yomiyasuは、explain-before-shortenが残した条件、用語、数値を削りません。
+この順序は`agents/AGENTS.md`に2行で書いています。
+
+#### impeccable（UIのレビューと改善）
+
+[pbakaus/impeccable](https://github.com/pbakaus/impeccable)のClaude Code向けビルドを、`claude/skills/impeccable/`に取り込んでいます。
+`/impeccable critique`、`audit`、`polish`などのコマンドで、UIの情報設計と見た目を評価し、修正するskillです。
+公式READMEの「Manual copy」手順に従ったため、`npx impeccable install`が追加するdesign hook（編集のたびと応答の終わりに検出器を実行するHook）とサブエージェントは入れていません。
+検出器は`~/.claude/skills/impeccable/scripts/impeccable detect --json <file>`で必要なときに実行してください。
+エンジンのバイナリは初回実行時に`~/.impeccable/bin/`へダウンロードされ、`scripts/engine-checksums.txt`のハッシュで検証されます。
+`/impeccable init`はリポジトリ直下に`PRODUCT.md`を作るので、対象のプロジェクトで実行してください。
+
+#### progress-dashboard（開発状況の記録とダッシュボード）
+
+プロジェクトの目標、タスク、ブロッカー、テスト結果、設計判断、次のアクションを`.claude/dashboard/`のJSONに記録し、ブラウザで開けるHTMLを生成するskillです（`claude/skills/progress-dashboard/`）。
+スクリプトはPython 3の標準ライブラリだけで動き、HTMLは外部のCDN、フォント、JavaScriptを使いません。
+
+使うプロジェクトでは、最初に1回だけ次を実行してください。
+
+```bash
+python3 ~/.claude/skills/progress-dashboard/scripts/progress.py init --goal "達成したいこと"
+xdg-open .claude/dashboard/dashboard.html
+```
+
+`claude/settings.json`には、このskillのスクリプトを呼ぶSessionStart、Stop、SessionEndのHookを登録しています。
+Hookは`.claude/dashboard/status.json`が無いプロジェクトでは何もしません。
+SessionStartは前回の状況の短い要約を会話に入れ、SessionEndはGitの状態を記録してHTMLを作り直します。
+Hookが失敗しても`.claude/dashboard/hook.log`に書いて終了コード0で抜けるので、作業は止まりません。
+記録するタイミングとコマンドは`claude/skills/progress-dashboard/SKILL.md`に書いています。
+テストは`python3 -m unittest discover -s claude/skills/progress-dashboard/tests`で実行できます。
+
+`init`したプロジェクトは`~/.local/state/progress-dashboard/projects.json`に登録され、`scripts/serve.py`が全プロジェクトの一覧と各ダッシュボードを1つのポートで配信します。
+常駐させるときは、systemdのユーザーサービスとして登録してください（ログアウト後も動かすにはlingerが必要です）。
+
+```bash
+systemctl --user link ~/dev/github.com/kazuhironx/mydotfiles/claude/skills/progress-dashboard/systemd/progress-dashboard.service
+systemctl --user enable --now progress-dashboard.service
+```
+
+`notes/remaining.md`のように残件の正本が既にあるプロジェクトでは、`init --tasks-from notes/remaining.md --decisions-from notes`で導入すると、ダッシュボードは正本を読んで表示するだけになり、二重管理になりません（SKILL.mdの「残件と判断の正本が既にあるプロジェクト」）。
+
+既定では127.0.0.1の8765番だけで待ち受けます。
+LANにも出すときは、`~/.config/progress-dashboard/serve.env`に`PROGRESS_DASHBOARD_EXTRA_ARGS=--bind <LANのアドレス>`と書いてサービスを再起動してください。
+VPNや検証用のネットワークにまで公開しないよう、`0.0.0.0`ではなく特定のアドレスを指定します。
+一覧の最上部の「あなたの対応待ち」には、このマシンで動いているClaude Codeのセッションのうち、承認や回答、次の指示を待っているものが並びます（herdrの外で起動したものも含みます）。
+リモートからは、sshの設定に`LocalForward 8765 127.0.0.1:8765`を足して接続し、`http://localhost:8765/`を開いてください。
 
 プロジェクト固有の指示としては、各リポジトリの`AGENTS.md`、`CLAUDE.md`、`.github/copilot-instructions.md`が優先です。
 Claude Code（v2.1.277以降）は、プロジェクトに`CLAUDE.md`が無ければ`AGENTS.md`を読みます。

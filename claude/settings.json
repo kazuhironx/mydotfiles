@@ -1,5 +1,125 @@
 {
-  "model": "opus",
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-5-5"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "model": "opus[1m]",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/home/kmz/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/skills/progress-dashboard/scripts/progress.py\" hook session-start",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/skills/progress-dashboard/scripts/progress.py\" hook stop",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/skills/progress-dashboard/scripts/progress.py\" hook session-end",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/skills/progress-dashboard/scripts/progress.py\" hook agent",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/skills/progress-dashboard/scripts/progress.py\" hook agent",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/skills/progress-dashboard/scripts/progress.py\" hook agent",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ls \"$HOME\"/.local/state/progress-dashboard/agents/*.waiting >/dev/null 2>&1 && python3 \"$HOME/.claude/skills/progress-dashboard/scripts/progress.py\" hook agent || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "idle_prompt|permission_prompt|elicitation_dialog|elicitation_url_dialog",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/skills/progress-dashboard/scripts/progress.py\" hook agent",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/skills/progress-dashboard/scripts/progress.py\" hook agent",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh",
@@ -9,25 +129,18 @@
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true
   },
+  "spinnerTipsEnabled": false,
   "effortLevel": "medium",
   "modelSettings": {
     "claude-opus-5": {
       "effortLevel": "low"
     }
   },
-  "theme": "dark",
-  "agentPushNotifEnabled": true,
   "advisorModel": "fable",
-  "remoteControlAtStartup": true,
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  },
-  "inputNeededNotifEnabled": true,
-  "showMessageTimestamps": true,
-  "spinnerTipsEnabled": false,
   "fastModePerSessionOptIn": true,
-  "env": {
-    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-5-5"
-  }
+  "theme": "dark",
+  "showMessageTimestamps": true,
+  "remoteControlAtStartup": true,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true
 }

@@ -1,0 +1,15 @@
+[Unit]
+Description=progress-dashboard hub (all registered projects on one page)
+
+[Service]
+# Loopback is for SSH tunnels (LocalForward). To also serve a LAN, put e.g.
+#   PROGRESS_DASHBOARD_EXTRA_ARGS=--bind <this host's LAN address>
+# in ~/.config/progress-dashboard/serve.env. Prefer a specific address over 0.0.0.0
+# so other attached networks (VPNs, test networks) are not exposed.
+EnvironmentFile=-%h/.config/progress-dashboard/serve.env
+ExecStart=/usr/bin/python3 -B %h/.claude/skills/progress-dashboard/scripts/serve.py --bind 127.0.0.1 --port 8765 $PROGRESS_DASHBOARD_EXTRA_ARGS
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
