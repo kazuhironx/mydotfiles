@@ -7,3 +7,9 @@
 
 [credential]
 	helper = cache --timeout=3600
+
+# `gh auth setup-git` writes to ~/.gitconfig, which is this repo's tracked file via symlink.
+# Keep host-specific credential settings (e.g. GitHub Enterprise) here instead of committing them.
+# [credential "https://github.example.com"]
+# 	helper =
+# 	helper = !/path/to/gh auth git-credential
