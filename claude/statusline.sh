@@ -83,6 +83,14 @@ pr=$(j '.pr.number // empty')
 # ime-watch が書く Mozc の入力モード。全角のまま / を打つ事故を防ぐため先頭に置く
 ime=$(cat "${XDG_CACHE_HOME:-$HOME/.cache}/ime-state" 2>/dev/null)
 line1=""
+# どのホストの Agent と話しているか取り違えないよう、最左に反転バッジを置く。
+# SSH 越しは赤、ローカル WSL は緑 (シェルプロンプトの配色と揃える)
+host=$(hostname -s 2>/dev/null || echo "?")
+if [ -n "${SSH_CONNECTION:-}" ]; then
+  line1+="$(C 231)\033[48;5;160m${B} SSH:${host} ${R} "
+else
+  line1+="$(C 16)\033[48;5;34m${B} ${host} ${R} "
+fi
 case "$ime" in
   "") ;;
   A)  line1+="${DIM}[A]${R} " ;;
