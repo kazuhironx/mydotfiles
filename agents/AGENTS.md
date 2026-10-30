@@ -13,6 +13,8 @@
 - 回答は日本語
 - 結論先出し、お世辞・前置き不要
 - 不要な要約は省く
+- 技術文書・設計説明・セッション要約は、explain-before-shorten で論理と前提を整えてから yomiyasu で文体を直す(この順)。単純な質問・コードには使わない
+- yomiyasu は explain-before-shorten が残した条件・用語・数値を削らない
 
 ## Code conventions
 
