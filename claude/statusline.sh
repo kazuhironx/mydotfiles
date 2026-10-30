@@ -89,7 +89,7 @@ host=$(hostname -s 2>/dev/null || echo "?")
 if [ -n "${SSH_CONNECTION:-}" ]; then
   line1+="$(C 231)\033[48;5;160m${B} SSH:${host} ${R} "
 else
-  line1+="$(C 16)\033[48;5;34m${B} ${host} ${R} "
+  line1+="$(C 16)\033[48;5;34m${B} ${WSL_DISTRO_NAME:+WSL:}${host} ${R} "
 fi
 case "$ime" in
   "") ;;
