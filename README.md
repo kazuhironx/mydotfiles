@@ -224,7 +224,7 @@ scripts/bootstrap.sh
 #### マシンの表示名
 
 starshipのプロンプトとClaude Codeのステータスラインは、先頭にマシンの表示名のバッジを出します。
-会社指定のホスト名だと見分けにくいため、表示名は`~/.config/host-label`の1行目に書いてください。
+ホスト名ではなく任意の名前を出したいときは、`~/.config/host-label`の1行目に書いてください。
 このファイルはマシン固有でmydotfilesでは管理しません。
 
 ```bash
