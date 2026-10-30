@@ -1,6 +1,25 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 add_newline = true
 
+# claude/statusline.sh の先頭バッジと配色を揃える。ssh 先は赤、ローカルは緑。
+format = '${custom.localhost}$all'
+
+[username]
+disabled = true
+
+[hostname]
+ssh_only = true
+ssh_symbol = 'SSH:'
+format = '[ $ssh_symbol$hostname ]($style) '
+style = 'bold fg:231 bg:160'
+
+[custom.localhost]
+when = '[ -z "$SSH_CONNECTION" ]'
+command = 'hostname -s'
+format = '[ $output ]($style) '
+style = 'bold fg:16 bg:34'
+shell = ['sh']
+
 [character]
 success_symbol = "[\\$](green bold)"
 error_symbol = "[\\$](red bold)"
