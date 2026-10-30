@@ -221,6 +221,24 @@ scripts/bootstrap.sh
 
 > **Note:** 共有の`~/.gitconfig`は末尾で`[include] path = ~/.gitconfig.local`を読み込みます。マシン固有の設定は`~/.gitconfig.local`に書き、mydotfilesでは管理しません。このファイルが無くても、gitはエラーを出さずに無視します。
 
+#### マシンの表示名
+
+starshipのプロンプトとClaude Codeのステータスラインは、先頭にマシンの表示名のバッジを出します。
+会社指定のホスト名だと見分けにくいため、表示名は`~/.config/host-label`の1行目に書いてください。
+このファイルはマシン固有でmydotfilesでは管理しません。
+
+```bash
+echo kmz-linux > ~/.config/host-label
+```
+
+| 状況 | バッジ |
+|---|---|
+| ローカル（WSLなら`WSL:`が付く） | 緑地に`WSL:kmz-win2` |
+| ssh接続中（`SSH_CONNECTION`あり） | 赤地に`SSH:kmz-linux` |
+
+ファイルが無いマシンでは`hostname -s`を表示します。
+開いているシェルには反映されないので、`exec zsh`するか新しいペインを開いてください。
+
 skillのリンクだけを張り直したいとき（skillを追加したときなど）は、`scripts/setup-skills.sh`を単独で実行してください。
 削除したskillの古いsymlinkも、このときに消えます。
 
