@@ -1,6 +1,6 @@
 # mydotfiles
 
-個人用のdotfilesリポジトリです。Zsh、Herdr、Emacs、Gitの設定に加えて、複数のAIコーディングエージェント（Claude Code、Codex、GitHub Copilot CLI）のグローバル指示をまとめて管理しています。
+個人用のdotfilesリポジトリです。Zsh、Herdr、Ghostty、Emacs、Gitの設定に加えて、複数のAIコーディングエージェント（Claude Code、Codex、GitHub Copilot CLI）のグローバル指示をまとめて管理しています。
 
 ## 含まれる設定
 
@@ -8,6 +8,7 @@
 |---|---|
 | `zsh/.zshrc` | Zshの設定 |
 | `herdr/config.toml` | Herdrの設定（`C-t` prefixのキーバインド） |
+| `ghostty/config` | Ghosttyの設定（フォント、透過、Ctrl+MをCRに戻すkeybind） |
 | `emacs/init.el` | Emacsの設定 |
 | `starship/starship.toml` | Starshipのプロンプト設定 |
 | `hunk/config.toml` | hunkの設定（gitのdiffとpagerの表示） |
@@ -209,7 +210,7 @@ scripts/bootstrap.sh
 
 このスクリプトは次の作業をします。
 
-- zsh、Herdr、emacs、starship、hunk、gitの設定ファイルへのsymlinkを`~`側に張る
+- zsh、Herdr、Ghostty、emacs、starship、hunk、gitの設定ファイルへのsymlinkを`~`側に張る
 - `AGENTS.md`へのsymlinkを張る（`~/.claude/CLAUDE.md`、`~/.codex/AGENTS.md`、`~/.copilot/copilot-instructions.md`）
 - Claude Codeの`~/.claude/settings.json`と`~/.claude/statusline.sh`へのsymlinkを張る
 - `~/.gitconfig.local`が無ければexampleからコピーする（既にあれば変更しない）

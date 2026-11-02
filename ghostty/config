@@ -1,0 +1,12 @@
+# Ghostty configuration
+# 設定リファレンス: ghostty +show-config --default --docs
+
+font-family = JetBrains Mono
+
+# 半透過 80%（Linux ではコンポジタが必要）
+background-opacity = 0.8
+# 背景だけ透過させ、文字セルは不透明に保って可読性を落とさない
+background-opacity-cells = true
+
+# Ghostty は Ctrl+M を CSI u (ESC[109;5u) で送り、zsh が文字として表示してしまうため CR に戻す
+keybind = ctrl+m=text:\r
