@@ -52,6 +52,7 @@ skillを追加するときは、適切な場所にディレクトリを作って
 取り込んだskillの更新には`scripts/update-skills.sh`を使います。
 引数なしで実行すると、全skillをupstreamから取り直して差分だけを表示します。`--apply`を付けると、リポジトリ内のコピーを上書きします。
 skill名を並べると、そのskillだけを対象にします（例：`scripts/update-skills.sh --apply yomiyasu`）。
+`--list`を付けると、全skillを自作か外部か、最終更新日、descriptionの文字数（毎セッション読み込まれる量）の一覧で表示します。ネットワークは使いません。
 `~/.<tool>/skills/`はリポジトリへのsymlinkなので、上書きした時点で全ツールに反映されます。`setup-skills.sh`の再実行は要りません。
 取得元、除外するファイル、ローカルの変更（frontmatterの書き換えなど）の扱いは、スクリプト冒頭の`SOURCES`に書いています。
 herdrとhunk-reviewはツール本体に同梱された版を取るので、先にツールを更新してください。explain-before-shortenは記事から手でコピーします。

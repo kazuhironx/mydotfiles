@@ -3,6 +3,9 @@
 #
 # Usage:
 #   scripts/update-skills.sh [--apply] [name...]
+#   scripts/update-skills.sh --list
+#     --list     : show every skill in the repo as own / vendored, last change,
+#                  and trigger text size (no network)
 #     no --apply : fetch into a temp dir and print the diff against the repo
 #     --apply    : overwrite the repo copy with the fetched one
 #     name...    : limit to these skills (default: all in SOURCES)
@@ -25,11 +28,12 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 #          herdr : `herdr --skill` (update herdr itself first)
 #          hunk  : `hunk skill path` (update hunkdiff itself first)
 #          manual: no fetchable source; print the note in subpath and skip
+#          frozen: upstream deleted the skill; print the note in subpath and skip
 #   keep   local-only files kept as-is (ATTRIBUTION.md is always kept)
 #   drop   upstream files deliberately not vendored (added to DROP)
 #   mode   verbatim | keep-frontmatter (local SKILL.md frontmatter, upstream body)
 SOURCES="
-agents/skills/ask-questions-if-underspecified|manual||upstream removed the skill in trailofbits/skills 3742e65 (2026-08-03); nothing to fetch||||
+agents/skills/ask-questions-if-underspecified|frozen||upstream removed the skill in trailofbits/skills 3742e65 (2026-08-03); nothing to fetch||||
 agents/skills/condition-based-waiting|github|obra/superpowers-skills|skills/testing/condition-based-waiting||||keep-frontmatter
 agents/skills/root-cause-tracing|github|obra/superpowers-skills|skills/debugging/root-cause-tracing||||keep-frontmatter
 agents/skills/systematic-debugging|github|obra/superpowers-skills|skills/debugging/systematic-debugging|||CREATION-LOG.md,test-academic.md,test-pressure-1.md,test-pressure-2.md,test-pressure-3.md|keep-frontmatter
@@ -46,17 +50,74 @@ agents/skills/explain-before-shorten|manual||copy the code block from https://ze
 claude/skills/crit|github|tomasz-tomczyk/crit|integrations/claude-code/skills/crit||||verbatim
 claude/skills/crit-cli|github|tomasz-tomczyk/crit|integrations/claude-code/skills/crit-cli||||verbatim
 claude/skills/impeccable|github|pbakaus/impeccable|.claude/skills/impeccable|LICENSE,NOTICE.md|||verbatim
+codex/skills/crit|github|tomasz-tomczyk/crit|integrations/codex/skills/crit||||verbatim
+codex/skills/crit-cli|github|tomasz-tomczyk/crit|integrations/codex/skills/crit-cli||||verbatim
+copilot/skills/crit|github|tomasz-tomczyk/crit|integrations/github-copilot/skills/crit||||verbatim
+copilot/skills/crit-cli|github|tomasz-tomczyk/crit|integrations/github-copilot/skills/crit-cli||||verbatim
+copilot/skills/cli-mastery|github|github/awesome-copilot|skills/cli-mastery||||verbatim
+copilot/skills/context-map|github|github/awesome-copilot|skills/context-map||||verbatim
+copilot/skills/copilot-instructions-blueprint-generator|github|github/awesome-copilot|skills/copilot-instructions-blueprint-generator||||verbatim
+copilot/skills/create-readme|github|github/awesome-copilot|skills/create-readme||||verbatim
+copilot/skills/editorconfig|github|github/awesome-copilot|skills/editorconfig||||verbatim
+copilot/skills/git-commit|github|github/awesome-copilot|skills/git-commit||||verbatim
+copilot/skills/github-issues|github|github/awesome-copilot|skills/github-issues||||verbatim
+copilot/skills/lsp-setup|github|github/awesome-copilot|skills/lsp-setup||||verbatim
+copilot/skills/suggest-awesome-github-copilot-skills|github|github/awesome-copilot|skills/suggest-awesome-github-copilot-skills||||verbatim
+copilot/skills/gh-cli|frozen||upstream removed the skill in github/awesome-copilot 352def3 (2026-05-14); nothing to fetch||||
+copilot/skills/make-skill-template|frozen||upstream removed the skill in github/awesome-copilot 570297c (2026-05-19); nothing to fetch||||
 "
 
 # Upstream files deliberately not vendored (plugin metadata, logos).
 DROP=(.codex-plugin assets)
+
+# Characters of description + when_to_use, i.e. what every session loads into
+# context for this skill. Used as a cost signal when reviewing the set.
+trigger_chars() {
+  awk '
+    /^---$/ { if (++fm == 2) exit; next }
+    fm == 1 && /^(description|when_to_use):/ { on = 1; sub(/^[a-z_]+: *[|>]?-? */, ""); printf "%s", $0; next }
+    fm == 1 && on && /^[ \t]/ { printf "%s", $0; next }
+    { on = 0 }
+  ' "$1" | wc -m
+}
+
+list_skills() {
+  local dir name scope row kind repo subpath origin updated chars t
+  # A tool loads the shared skills plus its own, so total per tool.
+  local -A total=([shared]=0 [claude]=0 [codex]=0 [copilot]=0)
+  printf '%-40s %-7s %-40s %-10s %6s\n' SKILL SCOPE ORIGIN UPDATED CHARS
+  for dir in "$DOTFILES_DIR"/{agents,claude,codex,copilot}/skills/*/; do
+    dir="${dir%/}"
+    [[ -f "$dir/SKILL.md" ]] || continue
+    name="$(basename "$dir")"
+    scope="$(basename "$(dirname "$(dirname "$dir")")")"
+    [[ "$scope" == agents ]] && scope=shared
+    row="$(grep -E "^${dir#"$DOTFILES_DIR"/}\|" <<< "$SOURCES" || true)"
+    IFS='|' read -r _ kind repo subpath _ <<< "$row"
+    case "$kind" in
+      github) origin="vendored: $repo" ;;
+      herdr|hunk) origin="vendored: bundled with $kind" ;;
+      manual) origin="vendored: manual copy" ;;
+      frozen) origin="vendored: frozen (removed upstream)" ;;
+      *) grep -qs '^Source:' "$dir/ATTRIBUTION.md" && origin="vendored: not in SOURCES" || origin="own" ;;
+    esac
+    updated="$(git -C "$DOTFILES_DIR" log -1 --format=%cs -- "$dir" 2>/dev/null)"
+    chars="$(trigger_chars "$dir/SKILL.md")"
+    total[$scope]=$((total[$scope] + chars))
+    printf '%-40s %-7s %-40s %-10s %6d\n' "$name" "$scope" "${origin:0:40}" "${updated:-uncommitted}" "$chars"
+  done
+  for t in claude codex copilot; do
+    printf '%-40s %-7s %-40s %-10s %6d\n' TOTAL "$t" "shared + $t" '' $((total[shared] + total[$t]))
+  done
+}
 
 apply=0
 names=()
 for arg in "$@"; do
   case "$arg" in
     --apply) apply=1 ;;
-    -h|--help) sed -n '2,17p' "$0"; exit 0 ;;
+    --list) list_skills; exit 0 ;;
+    -h|--help) sed -n '2,19p' "$0"; exit 0 ;;
     *) names+=("$arg") ;;
   esac
 done
@@ -89,7 +150,8 @@ while IFS='|' read -r dest kind repo subpath extras keep drop mode; do
   name="$(basename "$dest")"
   wanted "$name" || continue
   local_dir="$DOTFILES_DIR/$dest"
-  stage="$work/stage/$name"
+  # Same name can exist per tool (crit), so stage and report by repo path.
+  stage="$work/stage/$dest"
   mkdir -p "$stage"
   sha=""
 
@@ -98,7 +160,7 @@ while IFS='|' read -r dest kind repo subpath extras keep drop mode; do
       src="$(clone "$repo")"
       sha="$(git -C "$src" rev-parse HEAD)"
       if [[ ! -d "$src/$subpath" ]]; then
-        echo "!! $name: $repo/$subpath not found upstream (moved?)"
+        echo "!! $dest: $repo/$subpath not found upstream (moved?)"
         continue
       fi
       cp -a "$src/$subpath/." "$stage/"
@@ -107,8 +169,8 @@ while IFS='|' read -r dest kind repo subpath extras keep drop mode; do
       ;;
     herdr) herdr --skill > "$stage/SKILL.md" ;;
     hunk)  cp -a "$(hunk skill path)" "$stage/SKILL.md" ;;
-    manual)
-      echo "-- $name: manual update: $subpath"
+    manual|frozen)
+      echo "-- $dest: $kind: $subpath"
       continue
       ;;
   esac
@@ -127,13 +189,13 @@ while IFS='|' read -r dest kind repo subpath extras keep drop mode; do
   done
 
   if diff -r -q "$local_dir" "$stage" > /dev/null; then
-    echo "ok $name: up to date${sha:+ (${sha:0:12})}"
+    echo "ok $dest: up to date${sha:+ (${sha:0:12})}"
     continue
   fi
 
-  echo "## $name: changed${sha:+ (upstream ${sha:0:12})}"
+  echo "## $dest: changed${sha:+ (upstream ${sha:0:12})}"
   diff -ru "$local_dir" "$stage" | sed "s#$work/stage/#upstream/#; s#$DOTFILES_DIR/##" || true
-  changed+=("$name")
+  changed+=("$dest")
 
   if [[ $apply -eq 1 ]]; then
     rsync -a --delete "$stage/" "$local_dir/"
@@ -141,7 +203,7 @@ while IFS='|' read -r dest kind repo subpath extras keep drop mode; do
     if [[ -n "$sha" && -f "$local_dir/ATTRIBUTION.md" ]]; then
       sed -i -E "s#/tree/[0-9a-f]{40}/#/tree/$sha/#" "$local_dir/ATTRIBUTION.md"
     fi
-    echo "applied $name"
+    echo "applied $dest"
   fi
 done <<< "$SOURCES"
 
