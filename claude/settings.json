@@ -142,5 +142,13 @@
   "showMessageTimestamps": true,
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "skillOverrides": {
+    "crit": "user-invocable-only",
+    "crit-cli": "name-only",
+    "empirical-prompt-tuning": "user-invocable-only",
+    "explainer-book": "user-invocable-only",
+    "first-reader": "user-invocable-only",
+    "hunk-review": "user-invocable-only"
+  }
 }
