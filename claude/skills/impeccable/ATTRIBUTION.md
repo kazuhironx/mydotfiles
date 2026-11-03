@@ -1,4 +1,4 @@
-Source: https://github.com/pbakaus/impeccable/tree/02523aec3e4c4580102d996d1b6a71fbe062e03f/.claude/skills/impeccable
+Source: https://github.com/pbakaus/impeccable/tree/9fadc41729c38fd47d7ae622b501558653f9d2e9/.claude/skills/impeccable
 Upstream: https://github.com/pbakaus/impeccable (docs: https://impeccable.style/docs)
 Author: Paul Bakaus
 License: Apache-2.0 (LICENSE and NOTICE.md copied from repo root)
