@@ -27,6 +27,7 @@
 | `copilot/skills/` | GitHub Copilot CLI専用のAgent Skills |
 | `scripts/bootstrap.sh` | clone後に1回実行し、全設定をリンクする初期化スクリプト |
 | `scripts/setup-skills.sh` | Agent Skillsのsymlinkをskill単位で張り直すスクリプト（bootstrapが呼ぶ） |
+| `scripts/update-skills.sh` | 取り込んだAgent Skillsをupstreamから取り直し、差分を表示または反映するスクリプト |
 | `mozc/keymap-msime-hhkb-ime.tsv` | Mozcのキー設定（MS-IME準拠＋無変換=IMEオフ、変換=IMEオン） |
 | `environment.d/60-ibus-sync-mode.conf` | ibus-gtk4 1.5.29でBS後に未確定文字が画面に残る不具合の回避（`IBUS_ENABLE_SYNC_MODE=2`） |
 | `mozc/90-hhkb-ime.hwdb` | HHKBのLang1/Lang2を変換/無変換に読み替えるudev hwdb |
@@ -47,6 +48,13 @@ Agent Skillsは、置くディレクトリで配信先のツールを分けま�
 `scripts/setup-skills.sh`は、`agents/skills/`の共通skillと`<tool>/skills/`の専用skillを、skill単位のsymlinkとしてその中に張ります。
 ディレクトリ全体をsymlinkにすると、専用skillを同じ場所に置けなくなるため、この方式にしています。
 skillを追加するときは、適切な場所にディレクトリを作って`setup-skills.sh`を再実行してください。
+
+取り込んだskillの更新には`scripts/update-skills.sh`を使います。
+引数なしで実行すると、全skillをupstreamから取り直して差分だけを表示します。`--apply`を付けると、リポジトリ内のコピーを上書きします。
+skill名を並べると、そのskillだけを対象にします（例：`scripts/update-skills.sh --apply yomiyasu`）。
+`~/.<tool>/skills/`はリポジトリへのsymlinkなので、上書きした時点で全ツールに反映されます。`setup-skills.sh`の再実行は要りません。
+取得元、除外するファイル、ローカルの変更（frontmatterの書き換えなど）の扱いは、スクリプト冒頭の`SOURCES`に書いています。
+herdrとhunk-reviewはツール本体に同梱された版を取るので、先にツールを更新してください。explain-before-shortenは記事から手でコピーします。
 
 #### crit（エージェント出力のレビュー）
 
