@@ -1,6 +1,6 @@
 ---
 name: crit-cli
-description: Use when an agent needs to author or reply to crit inline comments programmatically (including multi-agent workflows commenting on shared code/plans/docs/proposals), publish or unpublish a crit review with crit share, sync a crit review to or from a GitHub PR, or read/interpret a crit review JSON file. Covers crit comment, crit share, crit unpublish, crit pull, crit push, review file format, and resolution workflow. Not for invoking an interactive review loop — that's the `crit` skill.
+description: Use when an agent needs to author or reply to crit inline comments programmatically (including multi-agent workflows commenting on shared code/plans/docs/proposals), publish or unpublish a crit review with crit share, sync a crit review to or from a GitHub PR or GitLab MR, or read/interpret a crit review JSON file. Covers crit comment, crit share, crit unpublish, crit pull, crit push, review file format, and resolution workflow. Not for invoking an interactive review loop — that's the `crit` skill.
 user-invocable: false
 ---
 
@@ -18,7 +18,7 @@ The review file path is shown by `crit status`.
 
 ## Reading comments
 
-Prefer finish stdout when available: after a review round, unresolved comments are in the `comments` array of `crit`'s JSON stdout (same schema as `crit comments --json`); `prompt` has brief instructions only.
+When `crit` completes a review round, read **stdout** and follow its instructions. Unresolved comments are often embedded in that prompt as JSON. Check **stderr** for `approved: true` or `approved: false`.
 
 When you need to read comments separately:
 
@@ -31,6 +31,22 @@ crit comments [path]     # explicit review.json or .crit directory
 ```
 
 Review-level comments are listed first — easy to miss in raw `review.json`. Uses the same review resolution as `crit comment` (`--output`, `--plan`, daemon session).
+
+## Multiple active sessions
+
+When more than one review session matches the current directory and branch, headless commands (`crit comment`, `crit comments`, `crit share`, `crit push`, `crit pull`) refuse to guess. Run `crit status` (or `crit status --json`) to list every active session, then target the intended review with `--session <id>`:
+
+```bash
+crit comment --session <id> --author <name> <path>:<line> <body>
+crit comment --session <id> --json --file comments.json --author <name>
+crit comments --session <id>
+crit share --session <id> <file>
+crit push --session <id>
+crit pull --session <id>
+```
+
+The JSON status output exposes the candidates in `sessions`.
+
 
 
 ## Review file format
@@ -91,6 +107,10 @@ crit comment --author 'Codex' <path> '<body>'
 crit comment --author 'Codex' <path>:<line> '<body>'
 crit comment --author 'Codex' <path>:<start>-<end> '<body>'
 
+# DOM pin (live review or HTML preview). File:line is rejected there.
+crit comment --author 'Codex' --selector '<css>' '<body>'
+crit comment --author 'Codex' --selector '<css>' --route <path> '<body>'
+
 # Reply to an existing comment
 crit comment --reply-to <id> --author 'Codex' '<body>'
 ```
@@ -101,6 +121,7 @@ Hard rules:
 - **Line numbers reference the file on disk** (1-indexed), not diff line numbers.
 - **Reply bodies support markdown** — use code fences and inline code where helpful.
 - **Only pass `--resolve` when the user explicitly asks.** Never resolve proactively. Same rule applies to the `resolve` field in `--json` mode.
+- **Live reviews and HTML preview** do not take `<path>:<line>`. Pin with `--selector <css>`. `--route` is the page path (default `/` for live, `/preview-content` for preview). In `--json`, use `"selector"` and `"route"`.
 
 ## Bulk commenting (3+ comments)
 
@@ -138,6 +159,8 @@ Per-entry schema:
 | `scope` | string | optional | `"review"` / `"file"` — usually inferred |
 | `reply_to` | string | replies | Comment ID (`c_…` or `r_…`) |
 | `resolve` | bool | optional | Only when user explicitly asks |
+| `quote` | string | optional | Line comments only: the exact text the comment is about, when it is part of the lines |
+| `quote_offset` | int | optional | Where `quote` starts in the lines' text, whitespace collapsed (as the web UI records it); needs `quote` |
 
 Scope inference (when `scope` omitted): has `reply_to` → reply; no `file`/`path` and no `line` → review-level; `path` but no `line` → file-level; `file`/`path` + `line` → line.
 
@@ -159,11 +182,12 @@ Plan reviews (via `crit plan` or the ExitPlanMode hook) store the review file in
 crit comment --plan my-plan-2026-03-23 --reply-to c_a1b2c3 --author 'Codex' 'Updated the plan'
 ```
 
-## GitHub PR Integration
+## GitHub PR / GitLab MR Integration
 
 ```bash
-crit pull [pr-number]                                    # Fetch PR review comments into the review file
-crit push [--dry-run] [--event <type>] [-m <msg>] [pr]   # Post review comments as a GitHub PR review
+crit pull [number|url]                                   # Fetch PR/MR review comments into the review file
+crit push [--dry-run] [--event <type>] [-m <msg>] [n]    # Post review comments to a PR/MR
+crit pull --forge gitlab 42                              # Force GitLab when auto-detect is ambiguous
 ```
 
 Requires `gh` CLI installed and authenticated. PR number is auto-detected from the current branch.
@@ -174,14 +198,17 @@ Requires `gh` CLI installed and authenticated. PR number is auto-detected from t
 
 ```bash
 crit share <file> [file...]                          # Upload and print URL
+crit share --share-url <url> <file>                  # Target a specific Crit deployment
 crit share --qr <file>                               # Also print QR code (terminal only)
 crit share --org <slug> <file>                       # Share under an organization
 crit share --org <slug> --visibility unlisted <file> # Org share with explicit visibility
 crit unpublish [file...]                              # Remove shared review
+crit unpublish --share-url <url> [file...]            # Unpublish from a specific deployment
 ```
 
 - **Always relay the output** — copy the URL (and QR if used) into your response. Don't make the user dig through tool output.
 - **`--qr` is terminal-only** — skip in mobile apps, web chat UIs, or anywhere Unicode block characters won't render correctly.
 - **`--org <slug>`** shares under an organization. Visibility defaults to `organization` (members only). Override with `--visibility` (`organization`, `unlisted`, `public`).
+- **`--share-url`** selects among configured `share_targets` (or overrides for one invocation). Required when multiple targets are configured and none is marked default. Empty `CRIT_SHARE_URL=` disables sharing for the process.
 - If a review file exists, comments for the shared files are included automatically.
-- **Unpublish uses the persisted delete token** in the review file — no extra args needed.
+- **Unpublish uses the persisted delete token** in the review file — no extra args needed unless targeting a non-default deployment with `--share-url`.

@@ -1,9 +1,13 @@
 ---
 name: crit
-description: Review code changes, a plan, a live page (running dev server), or a local HTML file with crit inline comments. Use when asked to review code, a plan, a diff, a running web app, or when you want structured human feedback on your work.
+description: "Review code changes, a plan, a live page (running dev server), or a local HTML file with Crit inline comments and structured human feedback. Use only when the user explicitly invokes /crit or directly asks to use Crit; a generic review request does not count."
 ---
 
 # Review with Crit
+
+This is the interactive, human-in-the-browser review cycle. Run it only after
+the user explicitly invokes `/crit` or directly asks to use Crit. A generic
+request to review code, a plan, a diff, a PR, or a page does not count.
 
 Review and revise code changes, plans, live pages (running dev servers, staging URLs), or local HTML files using `crit` for inline comment review.
 
@@ -14,6 +18,7 @@ The CLI auto-detects the review mode from its arguments. **Do not ask the user w
 ```
 crit <arguments>               # file, dir, URL, .html — CLI auto-detects mode
 crit --pr <num|url>            # GitHub PR (range mode)
+crit --mr <iid|url>            # GitLab MR (range mode)
 crit --range <base>..<head>    # commit range (range mode)
 crit                           # no args → branch diff
 ```
@@ -21,6 +26,19 @@ If no arguments, check conversation context:
 
 1. A plan file was written earlier in this conversation → `crit <plan-file>`
 2. Otherwise → bare `crit` (branch diff)
+
+If the user wants to open the review from another device — e.g. a phone over Tailscale:
+
+Keep crit on loopback and reverse-proxy in. Same Step 1 args still apply (file, bare `crit`, etc.):
+
+```bash
+crit --public-url "https://<machine>.ts.net" --allow-unauthenticated-network --no-open [args…]
+# then: tailscale serve --bg --https=443 http://127.0.0.1:<port>
+```
+
+- `--public-url` only changes the URL crit prints — it does **not** expose the server.
+- `--allow-unauthenticated-network` is required with `--public-url` (even on loopback) and with any non-loopback `--host`. Crit has no auth: anyone who can reach the URL can read the repo and post comments that may trigger agents. Confirm the user wants that blast radius.
+- **Do not bind `--host` to a Tailscale/LAN IP** — proxy with `tailscale serve` (or an SSH tunnel). Get `<port>` from crit's startup output, or fix it with `-p`. Relay the URL crit prints (the public one), not localhost.
 
 ## Step 2: Launch crit and block until review completes
 
@@ -43,11 +61,7 @@ If a crit server is already running from earlier in this conversation, `crit` au
 
 ## Step 3: Read the review output
 
-When `crit` completes, inspect its stdout JSON. Use `approved` for status and read `prompt` for instructions.
-
-If `"approved": true`, tell the user no changes were requested and stop.
-
-If `"approved": false`, unresolved comments are in the `comments` array (same schema as `crit comments --json`). Address each comment.
+When `crit` completes, read **stdout** and follow its instructions. Check **stderr** for `approved: true` or `approved: false`.
 
 When a comment has `quote`, `anchor`, or `drifted`:
 - `quote`: the specific text the reviewer selected — focus your changes on the quoted text rather than the entire line range
@@ -79,15 +93,21 @@ echo '[
 ]' | crit comment --json --author 'GitHub Copilot'
 ```
 
+For long or multi-line bodies, write the JSON to a file and pass `--file`. Use `--file`, not a `<` redirect.
+
+```bash
+crit comment --json --file /tmp/replies.json --author 'GitHub Copilot'
+```
+
 ## Step 5: Signal completion and start next round
 
 **CRITICAL — you MUST run this step. Do NOT skip it. Do NOT proceed without it.**
 
-After a round with feedback, run the command crit printed (`Next round:` on stdout, or in `copy_prompt`) verbatim in the foreground and block until it exits.
+The finish prompt on stdout includes the command to run again — use it to start a new round.
 
 On subsequent calls, `crit` automatically signals round-complete first, then blocks until the next "Finish Review" click.
 
-Tell the user: **"Changes applied. Review the diff in your browser and click Finish Review when ready."**
+Tell the user only: **"Replied in Crit. Review the changes in your browser and click Finish Review when ready."** Do not repeat your replies or list the comments in chat. The reviewer reads them in Crit.
 
 **Do NOT proceed until `crit` completes.** When it does, return to Step 3. If the user finishes with zero comments, the review is approved — stop the loop and proceed.
 
