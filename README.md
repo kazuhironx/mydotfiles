@@ -92,6 +92,13 @@ yomiyasuと併用するときは、explain-before-shortenで論理と前提を�
 yomiyasuは、explain-before-shortenが残した条件、用語、数値を削りません。
 この順序は`agents/AGENTS.md`に2行で書いています。
 
+#### pr-description（PRの本文と図）
+
+PRを作る、または本文を更新するときに、指示がなくても使う自作のskillです。共通の`agents/skills/`に置いています。
+差分から振る舞いと構成の変化を根拠つきで書き出し、図がレビューを助けるときだけ図を作ります。図はMermaidを優先し、足りないときだけPNGを使います。
+図は`explainer`の`figure-check.mjs`で、本文は`explain-before-shorten`と`yomiyasu`の順で検査します。PNGはリポジトリにコミットせず、PRに直接アップロードします。
+図の道具（playwright、vlmkit、mermaid）は、初回だけ`scripts/setup.sh`が`~/.cache/pr-description/`に入れます。
+
 #### impeccable（UIのレビューと改善）
 
 [pbakaus/impeccable](https://github.com/pbakaus/impeccable)のClaude Code向けビルドを、`claude/skills/impeccable/`に取り込んでいます。
