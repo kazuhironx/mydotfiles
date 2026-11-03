@@ -23,7 +23,7 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# dest | kind | repo | subpath | root extras | keep local | drop | mode
+# dest | kind | repo | subpath | root extras | keep local | drop
 #   kind   github: clone repo default branch, copy subpath (+ root extras)
 #          herdr : `herdr --skill` (update herdr itself first)
 #          hunk  : `hunk skill path` (update hunkdiff itself first)
@@ -31,40 +31,33 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 #          frozen: upstream deleted the skill; print the note in subpath and skip
 #   keep   local-only files kept as-is (ATTRIBUTION.md is always kept)
 #   drop   upstream files deliberately not vendored (added to DROP)
-#   mode   verbatim | keep-frontmatter (local SKILL.md frontmatter, upstream body)
 SOURCES="
-agents/skills/ask-questions-if-underspecified|frozen||upstream removed the skill in trailofbits/skills 3742e65 (2026-08-03); nothing to fetch||||
-agents/skills/condition-based-waiting|github|obra/superpowers-skills|skills/testing/condition-based-waiting||||keep-frontmatter
-agents/skills/root-cause-tracing|github|obra/superpowers-skills|skills/debugging/root-cause-tracing||||keep-frontmatter
-agents/skills/systematic-debugging|github|obra/superpowers-skills|skills/debugging/systematic-debugging|||CREATION-LOG.md,test-academic.md,test-pressure-1.md,test-pressure-2.md,test-pressure-3.md|keep-frontmatter
-agents/skills/verification-before-completion|github|obra/superpowers-skills|skills/debugging/verification-before-completion||||keep-frontmatter
-agents/skills/when-stuck|github|obra/superpowers-skills|skills/problem-solving/when-stuck||||keep-frontmatter
-agents/skills/empirical-prompt-tuning|github|mizchi/skills|empirical-prompt-tuning||SKILL-ja.md|README.md|verbatim
-agents/skills/explainer|github|mizchi/explainer|skills/explainer|LICENSE|||verbatim
-agents/skills/explainer-book|github|mizchi/explainer|skills/explainer-book|LICENSE|||verbatim
-agents/skills/first-reader|github|mizchi/explainer|skills/first-reader||||verbatim
-agents/skills/yomiyasu|github|nanaism/yomiyasu|skills/yomiyasu||||verbatim
-agents/skills/herdr|herdr||||||verbatim
-agents/skills/hunk-review|hunk||||||verbatim
-agents/skills/explain-before-shorten|manual||copy the code block from https://zenn.dev/microsoft/articles/explain-before-shorten by hand||||
-claude/skills/crit|github|tomasz-tomczyk/crit|integrations/claude-code/skills/crit||||verbatim
-claude/skills/crit-cli|github|tomasz-tomczyk/crit|integrations/claude-code/skills/crit-cli||||verbatim
-claude/skills/impeccable|github|pbakaus/impeccable|.claude/skills/impeccable|LICENSE,NOTICE.md|||verbatim
-codex/skills/crit|github|tomasz-tomczyk/crit|integrations/codex/skills/crit||||verbatim
-codex/skills/crit-cli|github|tomasz-tomczyk/crit|integrations/codex/skills/crit-cli||||verbatim
-copilot/skills/crit|github|tomasz-tomczyk/crit|integrations/github-copilot/skills/crit||||verbatim
-copilot/skills/crit-cli|github|tomasz-tomczyk/crit|integrations/github-copilot/skills/crit-cli||||verbatim
-copilot/skills/cli-mastery|github|github/awesome-copilot|skills/cli-mastery||||verbatim
-copilot/skills/context-map|github|github/awesome-copilot|skills/context-map||||verbatim
-copilot/skills/copilot-instructions-blueprint-generator|github|github/awesome-copilot|skills/copilot-instructions-blueprint-generator||||verbatim
-copilot/skills/create-readme|github|github/awesome-copilot|skills/create-readme||||verbatim
-copilot/skills/editorconfig|github|github/awesome-copilot|skills/editorconfig||||verbatim
-copilot/skills/git-commit|github|github/awesome-copilot|skills/git-commit||||verbatim
-copilot/skills/github-issues|github|github/awesome-copilot|skills/github-issues||||verbatim
-copilot/skills/lsp-setup|github|github/awesome-copilot|skills/lsp-setup||||verbatim
-copilot/skills/suggest-awesome-github-copilot-skills|github|github/awesome-copilot|skills/suggest-awesome-github-copilot-skills||||verbatim
-copilot/skills/gh-cli|frozen||upstream removed the skill in github/awesome-copilot 352def3 (2026-05-14); nothing to fetch||||
-copilot/skills/make-skill-template|frozen||upstream removed the skill in github/awesome-copilot 570297c (2026-05-19); nothing to fetch||||
+agents/skills/empirical-prompt-tuning|github|mizchi/skills|empirical-prompt-tuning||SKILL-ja.md|README.md
+agents/skills/explainer|github|mizchi/explainer|skills/explainer|LICENSE||
+agents/skills/explainer-book|github|mizchi/explainer|skills/explainer-book|LICENSE||
+agents/skills/first-reader|github|mizchi/explainer|skills/first-reader|||
+agents/skills/yomiyasu|github|nanaism/yomiyasu|skills/yomiyasu|||
+agents/skills/herdr|herdr|||||
+agents/skills/hunk-review|hunk|||||
+agents/skills/explain-before-shorten|manual||copy the code block from https://zenn.dev/microsoft/articles/explain-before-shorten by hand|||
+claude/skills/crit|github|tomasz-tomczyk/crit|integrations/claude-code/skills/crit|||
+claude/skills/crit-cli|github|tomasz-tomczyk/crit|integrations/claude-code/skills/crit-cli|||
+claude/skills/impeccable|github|pbakaus/impeccable|.claude/skills/impeccable|LICENSE,NOTICE.md||
+codex/skills/crit|github|tomasz-tomczyk/crit|integrations/codex/skills/crit|||
+codex/skills/crit-cli|github|tomasz-tomczyk/crit|integrations/codex/skills/crit-cli|||
+copilot/skills/crit|github|tomasz-tomczyk/crit|integrations/github-copilot/skills/crit|||
+copilot/skills/crit-cli|github|tomasz-tomczyk/crit|integrations/github-copilot/skills/crit-cli|||
+copilot/skills/cli-mastery|github|github/awesome-copilot|skills/cli-mastery|||
+copilot/skills/context-map|github|github/awesome-copilot|skills/context-map|||
+copilot/skills/copilot-instructions-blueprint-generator|github|github/awesome-copilot|skills/copilot-instructions-blueprint-generator|||
+copilot/skills/create-readme|github|github/awesome-copilot|skills/create-readme|||
+copilot/skills/editorconfig|github|github/awesome-copilot|skills/editorconfig|||
+copilot/skills/git-commit|github|github/awesome-copilot|skills/git-commit|||
+copilot/skills/github-issues|github|github/awesome-copilot|skills/github-issues|||
+copilot/skills/lsp-setup|github|github/awesome-copilot|skills/lsp-setup|||
+copilot/skills/suggest-awesome-github-copilot-skills|github|github/awesome-copilot|skills/suggest-awesome-github-copilot-skills|||
+copilot/skills/gh-cli|frozen||upstream removed the skill in github/awesome-copilot 352def3 (2026-05-14); nothing to fetch|||
+copilot/skills/make-skill-template|frozen||upstream removed the skill in github/awesome-copilot 570297c (2026-05-19); nothing to fetch|||
 "
 
 # Upstream files deliberately not vendored (plugin metadata, logos).
@@ -141,11 +134,9 @@ clone() {
   echo "$dir"
 }
 
-frontmatter() { awk 'NR==1 && /^---$/ {f=1; print; next} f {print} f && /^---$/ {exit}' "$1"; }
-body()        { awk 'NR==1 && /^---$/ {f=1; next} f && /^---$/ {f=0; b=1; next} !f {print}' "$1"; }
 
 changed=()
-while IFS='|' read -r dest kind repo subpath extras keep drop mode; do
+while IFS='|' read -r dest kind repo subpath extras keep drop; do
   [[ -z "$dest" ]] && continue
   name="$(basename "$dest")"
   wanted "$name" || continue
@@ -177,11 +168,6 @@ while IFS='|' read -r dest kind repo subpath extras keep drop mode; do
 
   IFS=',' read -ra drop_files <<< "$drop"
   for d in "${DROP[@]}" "${drop_files[@]}"; do rm -rf "${stage:?}/$d"; done
-
-  if [[ "$mode" == keep-frontmatter ]]; then
-    { frontmatter "$local_dir/SKILL.md"; body "$stage/SKILL.md"; } > "$stage/SKILL.md.new"
-    mv "$stage/SKILL.md.new" "$stage/SKILL.md"
-  fi
 
   IFS=',' read -ra keep_files <<< "ATTRIBUTION.md${keep:+,$keep}"
   for f in "${keep_files[@]}"; do
