@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 // Markdown を自己完結 HTML にする。1 ページでも、章立ての本でも。
 // - figures/*.svg への画像リンクは SVG をそのまま埋め込む (外部参照なし)
-// - 同名の *.scene.json があれば、vlmkit-anim html で再生ページ (dist/<name>.html) を作ってリンクする
 // - figures/*.fig.png への画像リンクは、同名の *.fig.html（手で書いた HTML の図）があればそれを埋め込む
 // - 複数ページのときは、ページ間の .md リンクを .html に張り替え、目次・前後の章へのナビを付ける
 //
 //   node build-html.mjs <doc>/README.md                       → dist/index.html
 //   node build-html.mjs <book>/README.md <book>/01-x.md …     → dist/index.html, dist/01-x.html, …
-import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -20,7 +18,7 @@ let marked;
 try {
   ({ marked } = await import(pathToFileURL(projectRequire.resolve('marked')).href));
 } catch {
-  console.error('marked is not installed in this project: npm i -D marked @mizchi/vlmkit @mizchi/vlmkit-anim playwright');
+  console.error('marked is not installed in this project: npm i -D marked @mizchi/vlmkit playwright');
   process.exit(2);
 }
 
@@ -28,7 +26,6 @@ const pages = (process.argv.length > 2 ? process.argv.slice(2) : ['README.md']).
 const docDir = dirname(pages[0]);
 const dist = join(docDir, 'dist');
 mkdirSync(dist, { recursive: true });
-const anim = join(process.cwd(), 'node_modules/@mizchi/vlmkit-anim/dist/cli.mjs');
 
 const htmlName = (md) => (basename(md) === 'README.md' ? 'index.html' : basename(md).replace(/\.md$/, '.html'));
 const titleOf = (src) => src.match(/^# (.+)$/m)?.[1] ?? 'Explainer';
@@ -48,17 +45,17 @@ function render(src) {
     if (!existsSync(html)) return all;
     return hold(`<figure aria-label="${alt}">${readFileSync(html, 'utf8')}<figcaption>${alt}</figcaption></figure>`);
   });
-  // SVG の図 → インライン SVG (+ 再生ページへのリンク)
+  // SVG の図 → インライン SVG
   md = md.replace(/!\[([^\]]*)\]\((figures\/[^)]+?)\.svg\)/g, (_, alt, base) => {
     const svg = readFileSync(join(docDir, `${base}.svg`), 'utf8').replace(/<\?xml[^>]*>/, '');
-    const scene = join(docDir, `${base}.scene.json`);
-    let link = '';
-    if (existsSync(scene) && existsSync(anim)) {
-      const name = base.split('/').pop();
-      spawnSync('node', [anim, 'html', scene, '--out', join(dist, `${name}.html`), '--title', alt], { encoding: 'utf8' });
-      link = `<a class="play" href="${name}.html">▶ 1 ステップずつ再生する</a>`;
-    }
-    return hold(`<figure role="img" aria-label="${alt}">${svg}<figcaption>${alt} ${link}</figcaption></figure>`);
+    return hold(`<figure role="img" aria-label="${alt}">${svg}<figcaption>${alt}</figcaption></figure>`);
+  });
+  // 画像（PNG など）の図 → data: URI で埋め込む（出力の HTML 1 枚で完結させる。dist には figures/ を写さない）
+  const mime = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp' };
+  md = md.replace(/!\[([^\]]*)\]\((figures\/[^)]+?\.(png|jpe?g|gif|webp))\)/g, (all, alt, file, ext) => {
+    const path = join(docDir, file);
+    if (!existsSync(path)) return all;
+    return hold(`<figure><img src="data:${mime[ext]};base64,${readFileSync(path).toString('base64')}" alt="${alt}" style="max-width:100%;height:auto"><figcaption>${alt}</figcaption></figure>`);
   });
   // 本の中のページへのリンクを .html に
   md = md.replace(/\]\(([\w.-]+\.md)(#[^)]*)?\)/g, (all, file, hash = '') =>
@@ -97,7 +94,6 @@ blockquote { margin: 1em 0; padding: .2em 1em; border-left: 4px solid var(--line
 figure { margin: 1.5em 0; }
 figure svg { display: block; max-width: 100%; max-height: 720px; width: auto; height: auto; margin: 0 auto; background: var(--fig); border-radius: 6px; }
 figcaption { color: var(--muted); font-size: .9rem; text-align: center; margin-top: .4em; }
-.play { margin-left: .5em; white-space: nowrap; }
 details { border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin: .6em 0; }
 summary { cursor: pointer; font-weight: 600; }
 nav.book { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: .93rem; }

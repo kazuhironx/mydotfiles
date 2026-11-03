@@ -1,4 +1,4 @@
-Source: https://github.com/mizchi/explainer/tree/9a2f8af6a2296ad9ad59f1606d8f54e7c7107f59/skills/explainer
+Source: https://github.com/mizchi/explainer/tree/ccdd7bacfb47451e38506d837af8a629504960b2/skills/explainer
 Upstream: https://github.com/mizchi/explainer
 Author: mizchi
 License: MIT

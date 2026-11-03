@@ -1,18 +1,21 @@
 #!/usr/bin/env node
 // TLC の状態グラフ (-dump dot,actionlabels) と反例トレース (TLC の標準出力) から、
-// vlmkit-anim の state-machine シーンと、その図が守るべき事実シート (expect) を作る。
+// Mermaid の flowchart と、その図が守るべき事実シート (facts) を作る。
+// stateDiagram ではなく flowchart なのは、figure-check.mjs の矢印の検査 (figure-arrows.mjs) が flowchart を読むから。
 //
 // 図は「TLC が実際に列挙した状態と遷移」だけで描く。記憶や想像で状態を足さない。
 //
-//   node tlc-to-scene.mjs --dot full.dot [--trace tlc.out] [--vars pc,count]
-//        [--abbrev read=R,write=W] [--also 'A,B,C'] [--title T] [--layout lr] --out fig/name
-//   → fig/name.scene.json, fig/name.expect.json
+//   node tlc-to-mermaid.mjs --dot full.dot [--trace tlc.out] [--vars pc,count]
+//        [--abbrev read=R,write=W] [--also 'A,B,C'] [--title T] [--layout lr|tb] --out fig/name
+//   → fig/name.mmd, fig/name.facts.json
+//   → figure-check.mjs fig/name.mmd --write で描いて検査する（facts の edges は図の辺とちょうど一致すること）
 //
-// - 自己ループ (終端での stuttering) は描かず、その状態を final (二重丸) にする。
+// - 初期状態は角丸 ("…")。スタジアム形 (["…"]) は描くたびに輪郭の path が乱数で変わり、SVG がコミット済みと一致しない。自己ループ (終端での stuttering) は描かず、その状態を終端 (両脇に縦線 [["…"]]) にする。
+//   二重丸 (((…))) はラベルの幅で円が決まり、ほかの箱の倍の大きさになった
 // - --vars で状態ラベルに出す変数と順序を選ぶ (id は状態ごとに別なので潰れない)。
 // - --abbrev で値を短くする (ラベルが長いと図が読めない。凡例は本文に書く)。
-// - --trace があれば、その行動列を trace にする。無ければ trace は空の note 1 つ。
-// - --also で、反例の前に別の行動列 (例: 正しい順序) を再生する。図は反例の終わりで止まる。
+// - --trace があれば、その行動列で辿った状態を太枠 (class path) にする。動きは本文の手順で説明する。
+// - --also で、反例の前に別の行動列 (例: 正しい順序) を辿る。どちらも TLC の遷移に無ければエラー。
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -31,7 +34,7 @@ const { values: opt } = parseArgs({
   },
 });
 if (!opt.dot || !opt.out) {
-  console.error('usage: tlc-to-scene.mjs --dot full.dot [--trace tlc.out] [--vars a,b] --out path/name');
+  console.error('usage: tlc-to-mermaid.mjs --dot full.dot [--trace tlc.out] [--vars a,b] --out path/name');
   process.exit(2);
 }
 
@@ -84,14 +87,12 @@ const transitions = edges
   .map((e) => ({ from: idOf.get(e.from), to: idOf.get(e.to), on: e.on }));
 
 // 反例トレース: "State 2: <Read("a") line 15, ...>" の行動名を順に拾う
-let trace = [];
 const visited = ['s0'];
-// 行動列を s0 から辿る (遷移に無い行動なら、図がTLCと食い違っているのでエラー)
+// 行動列を s0 から辿る (遷移に無い行動なら、図が TLC と食い違っているのでエラー)
 function play(actions, cur = 's0') {
   for (const a of actions) {
     const t = transitions.find((t) => t.from === cur && t.on === a);
     if (!t) throw new Error(`action ${a} is not a transition from ${cur}`);
-    trace.push(a);
     visited.push((cur = t.to));
   }
   return cur;
@@ -100,39 +101,44 @@ if (opt.also) play(opt.also.split(','));
 if (opt.trace) {
   const out = readFileSync(opt.trace, 'utf8');
   const actions = [...out.matchAll(/^State \d+: <(.+?) line \d+/gm)].map((m) => m[1].replace(/"/g, ''));
-  if (opt.also) {
-    trace.push({ goto: 's0', caption: 'TLC の反例: 初期状態に戻り、別の順序で実行する' });
-    visited.push('s0');
-  }
-  const cur = play(actions);
-  if (/^State \d+: Stuttering/m.test(out)) trace.push({ note: `${cur} で止まったまま (stuttering)` });
+  if (opt.also) visited.push('s0');
+  play(actions);
 }
-if (trace.length === 0) trace = [{ note: 'TLC が列挙した到達可能な状態と遷移' }];
 
-const scene = {
-  format: 'vlmkit-anim/scene@1',
-  kind: 'state-machine',
-  title: opt.title,
-  layout: opt.layout,
-  states: order.map((d) => {
-    const id = idOf.get(d);
-    return { id, label: labelOf(nodes.get(d).vars), ...(finals.has(id) ? { final: true } : {}) };
-  }),
-  initial: 's0',
-  transitions,
-  trace,
+// Mermaid のラベルに入れられない文字 (" は区切り) を避ける
+const text = (s) => s.replace(/"/g, "'");
+const labels = new Map(order.map((d) => [idOf.get(d), labelOf(nodes.get(d).vars)]));
+const onPath = new Set(opt.trace || opt.also ? visited : []);
+const shape = (id) => {
+  const l = `"${text(labels.get(id))}"`;
+  return id === 's0' ? `(${l})` : finals.has(id) ? `[[${l}]]` : `[${l}]`;
 };
-const expect = {
-  format: 'vlmkit-anim/expect@1',
-  states: order.map((d) => idOf.get(d)),
-  transitions: transitions.map((t) => `${t.from}->${t.to}:${t.on}`),
-  initial: 's0',
-  final: [...finals],
-  ...(opt.trace ? { visited, end: visited.at(-1) } : {}),
+const lines = [
+  '---',
+  `title: ${opt.title}`,
+  // 間隔を詰めて文字を大きくする: 既定のままだと 4 列の図がスマホ幅で 0.7 倍に縮み、辺のラベルが 9px を下回る。
+  // 間隔は px 固定なので、文字を大きくするほど図の幅に占める文字の割合が上がる
+  'config:',
+  '  themeVariables:',
+  '    fontSize: 20px',
+  '  flowchart:',
+  '    nodeSpacing: 14',
+  '    rankSpacing: 34',
+  '    padding: 6',
+  '---',
+  `flowchart ${opt.layout === 'tb' ? 'TB' : 'LR'}`,
+  ...order.map((d) => `  ${idOf.get(d)}${shape(idOf.get(d))}`),
+  ...transitions.map((t) => `  ${t.from} -->|"${text(t.on)}"| ${t.to}`),
+  ...(onPath.size ? ['  classDef path stroke-width:3px', `  class ${[...onPath].join(',')} path`] : []),
+];
+// 事実シート: 図に必ず出る語 (状態のラベルと行動名) と、ちょうどこの辺。figure-check.mjs が照合する
+const facts = {
+  labels: [...new Set([...labels.values(), ...transitions.map((t) => t.on)].map(text))],
+  edges: transitions.map((t) => `${t.from}->${t.to}`),
 };
 
 mkdirSync(dirname(opt.out), { recursive: true });
-writeFileSync(`${opt.out}.scene.json`, JSON.stringify(scene, null, 2) + '\n');
-writeFileSync(`${opt.out}.expect.json`, JSON.stringify(expect, null, 2) + '\n');
+writeFileSync(`${opt.out}.mmd`, lines.join('\n') + '\n');
+writeFileSync(`${opt.out}.facts.json`, JSON.stringify(facts, null, 2) + '\n');
 console.log(`${order.length} states, ${transitions.length} transitions, ${finals.size} final; trace ${visited.join(' -> ')}`);
-console.log(`wrote ${opt.out}.scene.json, ${opt.out}.expect.json`);
+console.log(`wrote ${opt.out}.mmd, ${opt.out}.facts.json`);

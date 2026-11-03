@@ -4,18 +4,18 @@
 //   node verify-doc.mjs <doc-dir> [--pages README.md,01-x.md,…] [--write] [--skip-html]
 //
 // 1. checks   <doc-dir>/checks.json のコマンドを再実行し、expect の各行が stdout に順に現れるか
-// 2. figures  <doc-dir>/figures/*.scene.json を vlmkit-anim check (+ --expect) / layout で検査し、
-//             still で描き直した SVG がコミット済みのものと一致するか (--write で上書き)
-// 2b. hand    手で書いた図（*.svg / *.fig.html / *.d2 / *.mmd）を figure-check.mjs に通す
+// 2. figures  図（*.svg / *.fig.html / *.d2 / *.mmd）を figure-check.mjs に通す。*.facts.json があれば照合し、
+//             --write で .d2 / .mmd から描いた SVG を上書きする
 // 3. prose    各ページ (既定は README.md) の <!-- output: name --> 直後のコードブロックが、その check の実出力にあるか
 //             <!-- source: path --> 直後のコードブロックが、そのファイルの一部と一致するか
 //             画像リンクとページ間リンク (*.md) の参照先が存在するか
+// 3b. 日本語  yomiyasu（入っていれば）の yomiyasu_lint.py で本文を点検し、見直す候補を △ で出す（落とさない）
 // 4. page     HTML に組み、各ページに vlmkit check integrity / check a11y contrast を通す (--skip-html で省略)
 //
 // どれか 1 つでも落ちれば exit 1。落ちた項目ごとに「何が・どこで・どう直すか」を 1 行で出す。
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -32,7 +32,6 @@ const docDir = resolve(positionals[0] ?? '.');
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = findUp(docDir, 'package.json') ?? process.cwd();
 const bin = (name) => join(repoRoot, 'node_modules', '.bin', name);
-const anim = `node ${join(repoRoot, 'node_modules/@mizchi/vlmkit-anim/dist/cli.mjs')}`;
 const TMP = mkdtempSync(join(tmpdir(), 'explainer-verify-'));
 const env = { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0', TMP, TLA2TOOLS: join(repoRoot, '.tools/tla2tools.jar'),
   APALACHE: join(repoRoot, '.tools/apalache/bin/apalache-mc') };
@@ -78,41 +77,19 @@ if (existsSync(checksFile)) {
   }
 } else console.log('  (no checks.json)');
 
-// ---- 2. figures --------------------------------------------------------------
-console.log('figures (vlmkit-anim)');
+// ---- 2. figures（SVG / HTML / D2 / Mermaid） ---------------------------------------------
+// figure-check.mjs に通す。目で見るシートもここで作られる
 const figDir = join(docDir, 'figures');
-const scenes = existsSync(figDir) ? readdirSync(figDir).filter((f) => f.endsWith('.scene.json')) : [];
-for (const f of scenes) {
-  const base = join(figDir, f.replace(/\.scene\.json$/, ''));
-  const expect = existsSync(`${base}.expect.json`) ? ` --expect ${base}.expect.json` : '';
-  const c = sh(`${anim} check ${base}.scene.json${expect}`);
-  if (c.code !== 0) ng(`${f}: check failed`, c.out.split('\n').filter((l) => l.startsWith('✗')).join(' / '));
-  else if (!expect) ng(`${f}: no fact sheet (${base}.expect.json)`, 'write the facts the figure must show; a figure checked only against itself proves nothing');
-  else ok(`${f}: check + facts (${c.out.match(/facts .*$/m)?.[0] ?? ''})`);
-  const l = sh(`${anim} layout ${base}.scene.json`);
-  if (l.code !== 0) ng(`${f}: layout issues`, l.out.split('\n').find((x) => /overlap|clipped|crossed/.test(x)));
-  else ok(`${f}: layout clean`);
-  sh(`${anim} still ${base}.scene.json --out ${TMP}/${f}.svg`);
-  const fresh = readFileSync(`${TMP}/${f}.svg`, 'utf8');
-  const svg = `${base}.svg`;
-  if (opt.write) { writeFileSync(svg, fresh); ok(`${f}: wrote ${svg}`); }
-  else if (!existsSync(svg) || readFileSync(svg, 'utf8') !== fresh)
-    ng(`${f}: committed SVG is stale or missing`, `re-run with --write (the scene changed after the SVG was drawn)`);
-  else ok(`${f}: SVG up to date`);
-}
-
-// ---- 2b. 手で書いた図（SVG / HTML / D2 / Mermaid） ---------------------------------------------
-// vlmkit-anim のシーンから描いたもの以外の図を figure-check.mjs に通す。目で見るシートもここで作られる
 const all = existsSync(figDir) ? readdirSync(figDir) : [];
 const handMade = all.filter((f) =>
-  f.endsWith('.d2') || f.endsWith('.mmd') || f.endsWith('.fig.html') ||
-  (f.endsWith('.svg') && !['.scene.json', '.d2', '.mmd'].some((x) => all.includes(f.replace(/\.svg$/, x)))));
-if (handMade.length) console.log('figures (hand-made: figure-check)');
+  f.endsWith('.d2') || f.endsWith('.mmd') || f.endsWith('.vl.json') || f.endsWith('.fig.html') ||
+  (f.endsWith('.svg') && !['.d2', '.mmd', '.vl.json'].some((x) => all.includes(f.replace(/\.svg$/, x)))));
+if (handMade.length) console.log('figures (figure-check)');
 for (const f of handMade) {
   const r = sh(`node ${join(here, 'figure-check.mjs')} ${join(figDir, f)}${opt.write ? ' --write' : ''}`);
   const fails = r.out.split('\n').filter((l) => l.trim().startsWith('✗'));
   const looks = r.out.split('\n').filter((l) => l.trim().startsWith('△')).length;
-  r.code === 0 ? ok(`${f}: CLEAN${looks ? `, △ ${looks}（辺のシートで目で見る）` : ''} (sheet: figures/.figure-check/${f.replace(/\.fig\.html$|\.svg$|\.d2$|\.mmd$/, '')}/)`) : ng(`${f}: ${fails.length} problem(s): ${fails.map((l) => l.trim().slice(2)).slice(0, 2).join(' / ')}`, `node ${join(here, 'figure-check.mjs')} ${join(figDir, f)} — then look at the sheet`);
+  r.code === 0 ? ok(`${f}: CLEAN${looks ? `, △ ${looks}（辺のシートで目で見る）` : ''} (sheet: figures/.figure-check/${f.replace(/\.fig\.html$|\.svg$|\.d2$|\.mmd$|\.vl\.json$/, '')}/)`) : ng(`${f}: ${fails.length} problem(s): ${fails.map((l) => l.trim().slice(2)).slice(0, 2).join(' / ')}`, `node ${join(here, 'figure-check.mjs')} ${join(figDir, f)} — then look at the sheet`);
 }
 
 // ---- 3. prose ----------------------------------------------------------------
@@ -143,6 +120,42 @@ for (const page of pages) {
     existsSync(join(docDir, m[1])) ? ok(`${page}: image ${m[1]}`) : ng(`${page}: image ${m[1]} is missing`);
   for (const m of md.matchAll(/\]\(([\w.-]+\.md)(?:#[^)]*)?\)/g))
     if (!existsSync(join(docDir, m[1]))) ng(`${page}: link to ${m[1]}, which does not exist`);
+}
+
+// ---- 3b. 日本語の読みやすさ（yomiyasu）------------------------------------------
+// yomiyasu のリンターは、AI の文章に出やすい型（太字・箇条書きの多さ、文末のコロン、比喩の動詞など）を数える。
+// 人の文章でも点数が出るので、落とさずに △ で知らせるだけにする。場所は $YOMIYASU_LINT か、スキルの置き場所から探す
+function findYomiyasu() {
+  if (process.env.YOMIYASU_LINT) return existsSync(process.env.YOMIYASU_LINT) ? process.env.YOMIYASU_LINT : null;
+  const rel = 'yomiyasu/scripts/yomiyasu_lint.py';
+  const bases = [join(process.cwd(), '.claude/skills'), join(process.cwd(), '.agents/skills'), join(homedir(), '.claude/skills'), join(homedir(), '.agents/skills')];
+  for (const b of bases) if (existsSync(join(b, rel))) return join(b, rel);
+  // プラグインとして入れた場合：~/.claude/plugins の下を浅く探す
+  const walk = (d, depth) => {
+    if (depth < 0 || !existsSync(d)) return null;
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      if (!e.isDirectory()) continue;
+      const p = join(d, e.name);
+      if (existsSync(join(p, rel))) return join(p, rel);
+      const found = walk(p, depth - 1);
+      if (found) return found;
+    }
+    return null;
+  };
+  return walk(join(homedir(), '.claude/plugins'), 5);
+}
+const yomiyasu = findYomiyasu();
+console.log('japanese (yomiyasu)');
+if (!yomiyasu) console.log('  - yomiyasu not installed; skipped (npx skills add nanaism/yomiyasu)');
+else for (const page of pages) {
+  const r = spawnSync('python3', ['-I', yomiyasu, '--json', join(docDir, page)], { encoding: 'utf8' });
+  let d;
+  try { d = JSON.parse(r.stdout); } catch { console.log(`  - ${page}: yomiyasu_lint failed: ${(r.stderr || '').trim().split('\n').at(-1)}`); continue; }
+  const m = d.metrics ?? {};
+  const head = `${page}: score ${d.score}（太字 1,000 字あたり ${m.bold_per_1000}、箇条書き ${Math.round((m.list_ratio ?? 0) * 100)}%）`;
+  if (!d.findings?.length) { ok(head); continue; }
+  console.log(`  △ ${head}、見直す候補 ${d.findings.length} 件（references/writing.md の「読みやすい日本語」）`);
+  for (const f of d.findings.slice(0, 5)) console.log(`      L${f.line} ${f.rule}: ${(f.snippet ?? '').slice(0, 50)}`);
 }
 
 // ---- 4. page -----------------------------------------------------------------

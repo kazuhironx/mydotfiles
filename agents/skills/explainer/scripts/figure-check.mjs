@@ -28,6 +28,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, dirname, extname, join, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { arrowScore, collectArrows, edgeSheet, flowDirection, judgeArrows } from './figure-arrows.mjs';
 
@@ -36,15 +37,19 @@ const { values: opt, positionals } = parseArgs({
   options: { facts: { type: 'string' }, write: { type: 'boolean', default: false }, out: { type: 'string' }, json: { type: 'string' } },
 });
 const src = resolve(positionals[0] ?? '');
-if (!existsSync(src)) { console.error('usage: figure-check.mjs <fig.svg|fig.fig.html|fig.d2|fig.mmd> [--facts f.json] [--write]'); process.exit(2); }
+if (!existsSync(src)) { console.error('usage: figure-check.mjs <fig.svg|fig.fig.html|fig.d2|fig.mmd|fig.vl.json> [--facts f.json] [--write]'); process.exit(2); }
 
 const dir = dirname(src);
-const kind = src.endsWith('.fig.html') ? 'html' : extname(src).slice(1);
-const name = basename(src).replace(/\.fig\.html$|\.svg$|\.d2$|\.mmd$/, '');
+const kind = src.endsWith('.fig.html') ? 'html' : src.endsWith('.vl.json') ? 'vl' : extname(src).slice(1);
+const name = basename(src).replace(/\.fig\.html$|\.svg$|\.d2$|\.mmd$|\.vl\.json$/, '');
 const out = resolve(opt.out ?? join(dir, '.figure-check', name));
 mkdirSync(out, { recursive: true });
-// 道具（.tools/d2、node_modules）は、図の近くか、実行したディレクトリの近くの package.json から探す
-const root = findUp(dir, 'package.json') ?? findUp(process.cwd(), 'package.json') ?? process.cwd();
+// 道具（.tools/d2、node_modules）は、図の近く、実行したディレクトリの近く、このスクリプトの近くの順に、
+// playwright を持つ package.json を探す（図の横に別の package.json があっても、そこに playwright が無ければ次へ）
+const here = dirname(fileURLToPath(import.meta.url));
+const hasPlaywright = (d) => { try { createRequire(join(d, 'package.json')).resolve('playwright'); return true; } catch { return false; } };
+const root = [dir, process.cwd(), here].map((d) => findUp(d, 'package.json')).find((d) => d && hasPlaywright(d))
+  ?? findUp(dir, 'package.json') ?? process.cwd();
 const projectRequire = createRequire(join(root, 'package.json'));
 const { chromium } = projectRequire('playwright');
 
@@ -93,7 +98,7 @@ const sh = (cmd, args) => spawnSync(cmd, args, { encoding: 'utf8' });
 console.log(`figure ${basename(src)} (${kind})`);
 
 // ---- 1. 図の本体（HTML の断片）を作る ----------------------------------------------
-let figureHtml, d2Source = null, mmdSource = null;
+let figureHtml, d2Source = null, mmdSource = null, vlSpec = null;
 if (kind === 'd2') {
   const d2 = [join(root, '.tools/d2'), 'd2'].find((p) => sh(p, ['--version']).status === 0);
   if (!d2) { ng('d2 is not installed', 'put the d2 binary at .tools/d2 or on PATH'); process.exit(1); }
@@ -143,6 +148,24 @@ if (kind === 'd2') {
     ng(`${name}.svg is stale or missing`, 're-run with --write after editing the .mmd');
   else ok(`${name}.svg matches the .mmd`);
   figureHtml = r.svg;
+} else if (kind === 'vl') {
+  // Vega-Lite の spec（データの図）。vega で SVG にする。ブラウザは要らず、文字は <text> のまま残る
+  let vega, vl;
+  try { vega = await import(pathToFileURL(projectRequire.resolve('vega')).href); vl = await import(pathToFileURL(projectRequire.resolve('vega-lite')).href); }
+  catch { ng('vega / vega-lite is not installed in this project', 'npm i -D vega vega-lite'); process.exit(1); }
+  vlSpec = JSON.parse(readFileSync(src, 'utf8'));
+  let svg;
+  try {
+    const view = new vega.View(vega.parse(vl.compile(vlSpec).spec), { renderer: 'none' });
+    svg = await view.toSVG();
+    view.finalize();
+  } catch (e) { ng(`vega-lite: ${String(e.message ?? e).split('\n')[0]}`); process.exit(1); }
+  ok('vega-lite: rendered');
+  if (opt.write) { writeFileSync(join(dir, `${name}.svg`), svg); ok(`wrote ${name}.svg`); }
+  else if (!existsSync(join(dir, `${name}.svg`)) || readFileSync(join(dir, `${name}.svg`), 'utf8') !== svg)
+    ng(`${name}.svg is stale or missing`, 're-run with --write after editing the .vl.json');
+  else ok(`${name}.svg matches the .vl.json`);
+  figureHtml = svg;
 } else if (kind === 'svg') {
   figureHtml = readFileSync(src, 'utf8').replace(/<\?xml[^>]*>/, '');
 } else if (kind === 'html') {
@@ -170,7 +193,7 @@ const variants = [
 ];
 const shots = {};
 const geometry = {};
-let arrows = null, arrowResult = null, edgesPng = null;
+let arrows = null, arrowResult = null, edgesPng = null, tofu = [];
 for (const v of variants) {
   const p = await browser.newPage({ viewport: { width: v.width, height: 900 }, colorScheme: v.scheme, deviceScaleFactor: 2 });
   await p.setContent(page(v.scheme), { waitUntil: 'networkidle' });
@@ -188,6 +211,27 @@ for (const v of variants) {
       await edgeSheet(p, browser, arrows, flagged, edgesPng);
     }
   }
+  if (v.key === 'light') tofu = await p.evaluate(() => {
+    const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    const draw = (ch, font) => { g.clearRect(0, 0, 64, 64); g.font = font; g.fillText(ch, 4, 48); return g.getImageData(0, 0, 64, 64).data.join(','); };
+    const found = [], seen = new Set();
+    const figure = document.querySelector('#figure');
+    for (const el of figure.querySelectorAll('text, tspan, *')) {
+      const own = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join('');
+      if (!own.trim()) continue;
+      const cs = getComputedStyle(el);
+      const font = `40px ${cs.fontFamily}`;
+      const none = draw('\u{10FFFF}', font);
+      for (const ch of own) {
+        const cp = ch.codePointAt(0);
+        if (cp < 0x80 || /\s/.test(ch) || seen.has(ch + font)) continue;
+        seen.add(ch + font);
+        if (draw(ch, font) === none) found.push({ ch, cp: cp.toString(16).toUpperCase().padStart(4, '0'), text: own.trim().slice(0, 30) });
+      }
+    }
+    return found;
+  });
   // 文字の箱：SVG なら text 要素、HTML なら直下に文字を持つ要素
   geometry[v.key] = await p.evaluate(() => {
     const figure = document.querySelector('#figure');
@@ -273,6 +317,16 @@ await browser.close();
 if (kind === 'html' && opt.write) { writeFileSync(join(dir, `${name}.fig.png`), readFileSync(shots.light)); ok(`wrote ${name}.fig.png (for Markdown)`); }
 
 // ---- 3. 機械の検査 -------------------------------------------------------------------
+// 文字が文字のまま描かれているか。matplotlib の SVG は既定で文字を輪郭（path）にするので、下の文字の検査がすべて素通りする
+const textCount = (figureHtml.match(/<text\b/g) ?? []).length;
+const glyphUses = (figureHtml.match(/<use\b/g) ?? []).length + (figureHtml.match(/<path\b[^>]*\bid="[^"]*(?:-[0-9a-f]{2,}|glyph)[^"]*"/gi) ?? []).length;
+if (['svg', 'html'].includes(kind) && textCount === 0 && glyphUses >= 5)
+  ng(`text is drawn as outlines (${glyphUses} glyph shapes, 0 <text>); the text checks below cannot read it`,
+    'matplotlib: plt.rcParams["svg.fonttype"] = "none" before savefig. Or draw the chart as a Vega-Lite spec (.vl.json)');
+// 字形の無い文字（豆腐）：その文字を、図と同じフォントで描いた画素が、どのフォントにも無い文字（U+10FFFF）と同じなら豆腐
+if (tofu.length) ng(`${tofu.length} character(s) have no glyph in any installed font (drawn as tofu): ${tofu.slice(0, 5).map((c) => `"${c.ch}" U+${c.cp} in "${c.text}"`).join(', ')}`,
+  'use a font that has the character, or replace it (e.g. ≤ → 以下)');
+else ok('every character has a glyph');
 const area = (a) => Math.max(0, a.right - a.left) * Math.max(0, a.bottom - a.top);
 const inter = (a, b) => area({ left: Math.max(a.left, b.left), top: Math.max(a.top, b.top), right: Math.min(a.right, b.right), bottom: Math.min(a.bottom, b.bottom) });
 for (const key of ['light', 'mobile']) {
@@ -320,6 +374,14 @@ if (arrowResult) {
   if (!arrowResult.fail.length) ok(`arrows: ${arrows.edges.length} edge(s), none share a trunk or pass through a box`);
   summary.arrowScore = arrowScore(arrowResult);
 } else if (['d2', 'mmd'].includes(kind)) ng('arrows: no edges found in the rendered SVG', 'the D2 / Mermaid output format may have changed; figure-arrows.mjs cannot see the arrows');
+// データの図：パネルの題に「何を見る図か — 何が見えれば合格か」があるか（無くても落とさない。目で見る項目）
+if (vlSpec) {
+  const titles = [];
+  const walk = (o) => { if (!o || typeof o !== 'object') return; if (typeof o.title === 'string' && (o.mark || o.layer)) titles.push(o.title); for (const k of ['vconcat', 'hconcat', 'concat', 'layer']) (o[k] ?? []).forEach(walk); };
+  walk(vlSpec);
+  const bare = titles.filter((t) => !/\s[—–-]\s/.test(t));
+  bare.length ? look(`panels without "what to look at — what passes" in the title: ${bare.map((t) => `"${t}"`).join(', ')}`) : titles.length && ok(`${titles.length} panel title(s) say what to look at and what passes`);
+}
 const tiny = geometry.mobile.boxes.filter((b) => b.h < 9);
 tiny.length ? ng(`mobile: ${tiny.length} label(s) render under 9px tall: ${tiny.slice(0, 3).map((b) => `"${b.text}" ${b.h.toFixed(1)}px`).join(', ')}`, 'the figure is too wide for its text; fewer columns, larger font, or a taller layout') : ok('mobile: every label is at least 9px tall');
 

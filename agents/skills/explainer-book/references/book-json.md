@@ -64,7 +64,8 @@
 
 ## 生成されるもの
 
-`verify-book.mjs --write` が `figures/book-map.scene.json` と `figures/book-map.expect.json` を作る。
+`verify-book.mjs --write` が `figures/book-map.mmd`（Mermaid）と `figures/book-map.facts.json` を作り、`figure-check.mjs` が `figures/book-map.svg` を描く。
+図に題は入れない（長い本の題はスマホではみ出した）。矢印の意味は README の本文に書く。
 
 - 章 1 つが 1 つの箱（`ch01`, `ch02`, …）
 - 矢印 `chNN -> chMM`：NN 章が、MM 章で導入した概念を `requires` している

@@ -1,8 +1,8 @@
 # 図：問い → 種類 → 事実シート → 検査
 
-図は `@mizchi/vlmkit-anim` のシーン（JSON）で描く。
-座標は書かない。書くのは「種類（kind）」と「意図」。
-書き方の詳細は vlmkit の `docs/anim-ir.md` と `vlmkit-anim schema --kind <kind>` を参照する。
+図は Mermaid か D2 のテキストで描く（足りなければ SVG / HTML。順序は下の「手で描く図」）。
+座標は書かない。書くのは箱と辺（意味）で、配置は道具が決める。
+どの図にも事実シート `figures/<name>.facts.json` を付け、`figure-check.mjs` で照合する。
 
 ## 描くか
 
@@ -16,53 +16,109 @@
 - 1 つの関数の中身
 - 値を 1 つ聞かれている
 
-## 問いから種類を選ぶ
+## 問いから形を選ぶ
 
-| 読み手の問い | kind | 事実の出どころ |
+| 読み手の問い | 形 | 事実の出どころ |
 |---|---|---|
-| どういう状態があり、何で移るか | `state-machine` | TLC `-dump dot,actionlabels` → `scripts/tlc-to-scene.mjs` |
-| 反例はどういう順序で起きたか | `state-machine` の `trace` / `sequence` / `distributed` | TLC・Apalache・Quint の反例トレース |
-| A は B に含まれるか（集合・範囲） | `diagram` の入れ子 `groups` | 道具の出力（到達可能状態の一覧、型の定義） |
-| どう分岐するか | `flowchart` の `walk` | 条件分岐のコード |
-| どういう構造か（モジュール） | `modules` | `vlmkit-anim facts <dir> --depth 1` |
-| この PR で何が変わるか | `vlmkit-anim pr --base origin/main` | git |
+| どういう状態があり、何で移るか | Mermaid flowchart（状態 = 箱、遷移 = 辺） | TLC `-dump dot,actionlabels` → `scripts/tlc-to-mermaid.mjs` |
+| 反例はどういう順序で起きたか | 状態の図で反例の道を太枠（`--trace`）に。やり取りなら Mermaid `sequenceDiagram` | TLC・Apalache・Quint の反例トレース |
+| A は B に含まれるか（集合・範囲） | D2 の入れ子のコンテナ | 道具の出力（到達可能状態の一覧、型の定義） |
+| どう分岐するか | Mermaid flowchart / D2 | 条件分岐のコード |
+| どういう構造か（モジュール） | D2（`d2-diagram` スキル） | import / package.json の依存 |
 
 1 つの問いに図は 1 枚。
 
 ## 手順
 
 ```
-1. 事実シート  <name>.expect.json を道具の出力から作る（手で書くなら、出どころを本文に書く）
-2. シーン     <name>.scene.json。id は ASCII、表示は label に
-3. check      vlmkit-anim check <name>.scene.json --expect <name>.expect.json   ✗ を 0 に
-4. layout     vlmkit-anim layout <name>.scene.json                              重なり・はみ出し 0 に
-5. explain    vlmkit-anim explain <name>.scene.json                             キャプションが「なぜ」を言っているか
-6. still      vlmkit-anim still <name>.scene.json --out <name>.svg              一度は目で見る（.png で Read）
+1. 事実シート  <name>.facts.json を道具の出力から作る（手で書くなら、出どころを本文に書く）
+2. ソース     <name>.mmd か <name>.d2。id は ASCII、表示はラベルに
+3. 検査       figure-check.mjs figures/<name>.mmd --write   ✗ を 0 に（facts の edges はソースの辺とちょうど一致）
+4. 目で見る   シートと辺のシートを Read で開く（下の「ループ」）
 ```
 
-`verify-doc.mjs` は 3・4・6 を毎回やり直す。
-SVG がシーンより古ければ落ちる。
+`verify-doc.mjs` は 3 を毎回やり直す。
+SVG がソースより古ければ落ちる。
 
 ## 事実シートは道具から
 
-- 状態グラフ：`tlc-to-scene.mjs` が TLC の dot から scene と expect を同時に作る。
+- 状態グラフ：`tlc-to-mermaid.mjs` が TLC の dot から `.mmd` と `.facts.json` を同時に作る。`--trace` / `--also` の行動列が TLC の遷移に無ければエラーで止まる。
   - `checks.json` に「作り直して、コミット済みのものと diff」を入れておく。図が TLC とずれたら検証が落ちる。
-- 手で描いた図（例：包含関係の図）：図の一部を道具の出力と照合する小さなスクリプトを `checks.json` に入れる（例：`figures/check-induction.mjs`）。
+- 手で描いた図（例：包含関係の D2）：図の一部を道具の出力と照合する小さなスクリプトを `checks.json` に入れる（例：`figures/check-induction.mjs` が D2 の `reach` コンテナを TLC の状態と照合する）。
 
 ## よくある kickback
 
-- `canvas ... over 2000px`：ラベルが長い。`tlc-to-scene.mjs --bare --abbrev read=R,...` で短くし、凡例を本文に書く。`layout` を `tb` / `lr` で比べる。
-- `state ... drawn but the trace never enters it`：全状態を描き、反例だけを歩く図では想定内の警告。本文で「描いたが歩かない状態」の意味を説明する。
-- GIF は重い（13 状態で 5 MB）。README には SVG を置く。動きは `build-html.mjs` が作る再生ページ（`vlmkit-anim html`）で見せる。
+- スマホで文字が 9px 未満：ラベルが長いか、横に広い。`tlc-to-mermaid.mjs --bare --abbrev read=R,...` で短くし、凡例を本文に書く。`--layout tb` / `lr` を比べる。
+- Mermaid が箱の中でラベルを折り返し、facts の語が見つからない：frontmatter の `flowchart: { wrappingWidth: 480 }` で折り返しを広げる。
+- 描くたびに SVG が変わり「stale」で落ちる：Mermaid のスタジアム形 `([…])` は輪郭を乱数で描く。角丸 `(…)` にする。
+- 二重丸 `(((…)))` はラベルの幅で円が決まり、ほかの箱の倍になる。終端は `[[…]]` にする。
+- 動きは図にしない。状態の図に道を太枠で引き、手順は本文で番号を振って書く。
+
+## データの図（グラフ）
+
+数値の分布・関係・モデルの診断を見せる図は、Vega-Lite の spec（`figures/<name>.vl.json`）で書く。
+`figure-check.mjs` が vega で SVG にし、ほかの図と同じ検査をする（`npm i -D vega vega-lite`）。
+
+- 文字が SVG の `<text>` のまま出るので、重なり・はみ出し・小さすぎる文字・事実シートの検査が届く。
+- spec は JSON なので、題と値を事実シートや `checks.json` と照合できる。
+- ブラウザを使わず、node だけで描ける。
+
+値の計算と描画は分ける。値はスクリプトで計算して spec のデータに入れ、本文に載せる値は `checks.json` で計算し直して照合する。
+計算は、JS で書ければ JS、書けなければ Python。
+
+| 計算 | JS / TS | Python が要る |
+|---|---|---|
+| 集計・分布・ROC / PR・キャリブレーション | 手で書ける（数十行） | |
+| GLM の係数と SE（IRLS） | `ml-matrix` で書ける（`docs/dataviz/` で statsmodels と小数 6 桁まで一致） | |
+| 検定（t・χ²・順位） | `@stdlib/stats` | |
+| PCA・k-means・決定木 | `ml-pca`・`ml-kmeans`・`ml-cart` | |
+| 混合効果・Cox・頑健 SE・因子分析・SHAP | 成熟したものが無い | statsmodels・lifelines・factor_analyzer・shap |
+| MCMC | Stan の CLI（cmdstan）の出力を読めばよい | どちらでも |
+
+Python で計算したときも、図は Vega-Lite の spec に値を入れて描くのがよい。
+matplotlib で描くなら、次の 2 つを守る。
+
+- SVG の文字を輪郭にしない：`plt.rcParams["svg.fonttype"] = "none"`。既定のままだと文字が path になり、`figure-check` は「drawn as outlines」で落とす（文字の検査がすべて素通りするため）。
+- `Glyph ... missing from font(s)` の警告は、失敗として扱う。PNG にその文字が豆腐（□）で出る。日本語のフォントには `≤` などの記号が無いことがある。ブラウザで描く図の豆腐は、`figure-check` が見つける。
+
+### 診断の図と判定表
+
+モデルや分析の診断を読み手に見せるときは、次の型にする。
+
+- 1 つの手法につき 1 枚。パネルの題に「何を見る図か — 何が見えれば合格か」を書く（例：「キャリブレーション — 対角線に沿う」）。題にこの形が無いパネルは、`figure-check` が △ で知らせる。
+- 合格の基準の線（対角線・陽性率・±2SE のバンド）は破線で描く。
+- スマホで読む資料では、パネルを 2 列に並べない。縦に積む（`vconcat`）。375px 幅で 2 列にすると、目盛りが 6px になる。
+- 本文に判定表を置く。
+
+  | 診断項目 | 実測値 | 合格基準 | 判定 | 次アクション |
+  |---|---|---|---|---|
+
+  - 実測値は、スクリプトの出力をそのまま写す。
+  - 判定（OK / 要対処 / 確認）と次アクションは、図と合格基準を見て書く。スクリプトの if で組み立てない（件数は基準内でも、図に形があることがある）。
+  - 要対処には、次アクションを必ず書く。すべて OK でも表を出す。
+  - 実測値には、依頼文の値か、実行した出力の値だけを書く。合格基準には、出典のあるものだけを書く。出典の無い閾値は作らず、「文脈による」として判定を「確認」にする。
+
+#### よく使う合格基準（ロジスティック回帰）
+
+| 診断項目 | 合格基準 | 出典・根拠 |
+|---|---|---|
+| AUC・AP | 決まった閾値は無い。用途で決める（判定は「確認」）。AP は陽性率と比べる | 陽性率が AP のベースライン（でたらめに並べたときの値） |
+| Brier score | ベースライン p(1 − p)（p は陽性率）より小さい | 全員に陽性率を答えたときの Brier が p(1 − p) |
+| キャリブレーション | 十分位の点が対角線に沿う。外れ方に形が無い | 図を見て判断する（数の閾値は無い） |
+| binned residual | ±2SE のバンドの外に出るビンが、Binomial(K, 0.05) の上側 5% 点以下（K = 20 なら 3 個以下）。外れ方に形が無い | モデルが正しければ、各ビンはおよそ 5% の確率でバンドの外に出る（Gelman & Hill 2007 の binned residual plot） |
+| 係数 | 解釈する係数の SE が出ている。|係数| / SE の大きさを示す（p 値の閾値は依頼文に無ければ置かない） | — |
+
+例は `docs/dataviz/`（ロジスティック回帰の 4 パネル。JS で計算した値を、Python の値と照合している）。
+この型は、[atsushi-green/ds-ai-coding-skills](https://github.com/atsushi-green/ds-ai-coding-skills) の diagnostics スキルの考え方を参考に書いた（ライセンスの記載が無いので、文章とコードは使っていない）。
 
 ## 手で描く図（Mermaid / D2 / SVG / HTML）と、目で見るループ
 
-vlmkit-anim の kind に当てはまらない概念図（包含関係、使い分けの図、コードと箱が混ざる図）は、直接マークアップで書く。
+道具の出力から作る図（上）でも、手で書く概念図（使い分けの図、コードと箱が混ざる図）でも、形式は同じ順で選ぶ。
 形式は **Mermaid → D2 → SVG / HTML** の順に当て、足りるものを使う（測った結果は `docs/figure-cheatsheet/`）。
 
 1. **Mermaid で済むなら Mermaid**：フロー・シーケンス・状態遷移など。GitHub の Markdown（PR 本文・Issue）がそのまま描くので、PR の説明に置く図はこれが一番安い。
 2. **Mermaid で足りない構造なら D2**：次のどれかに当たるとき。
-   - サブグラフの中の向きを変えたいが、中の箱が外とつながる（Mermaid は中の `direction` を黙って無視する）
+   - サブグラフの中の向きを変えたいが、中の箱が外とつながる（Mermaid は中の `direction` をエラーを出さずに無視する）
    - 箱の名前の上を線が通る（Mermaid・ELK・dagre で起きた。TALA で避けられた）
    - 位置の固定や `near` が要る
    - エンジン（TALA / ELK）を選びたい
@@ -162,7 +218,7 @@ node <skill>/scripts/icons.mjs inline lucide:database --size 24 --x 10 --y 10   
     - 箱の数に対して描画時間が急に伸びる（40 個で ELK の 10 倍以上）。
   - **ELK**：一方向の長い DAG、戻る辺のある手順、何度も描き直す大きい図。1 つ足しても配置があまり動かない。
     - 箱をまたぐ線が箱の名前を通る（`through` で落ちる）。
-    - **箱ごとの `direction` を黙って無視する**（エラーにならない）。箱の中を縦にするなら `grid-columns: 1`。
+    - **箱ごとの `direction` を、エラーを出さずに無視する**。箱の中を縦にするなら `grid-columns: 1`。
   - **dagre**：ELK より良い場面は見つかっていない。
   - 横に長い流れは、どのエンジンでもスマホで文字が潰れる。縦に流す。
 - **D2**：戻る辺があると、TALA は戻り先を上に置くことがあり、入口が上に来ない。入口を上にしたいときは、ファイルの先頭で ELK を選ぶ。

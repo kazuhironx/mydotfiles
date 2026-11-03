@@ -10,7 +10,7 @@
 //   budget      本文の推定読了時間が、章の minutes に収まるか
 //   exercises   演習の印 <!-- exercise: <id> --> があり、答えが <details> の中にあるか。
 //               starter (未完成で落ちるはずの検査) と answer (通るはずの検査) が checks.json にあるか
-//   map         book.json から章の依存図 (vlmkit-anim modules) と事実シートを作り、コミット済みと一致するか
+//   map         book.json から章の依存図 (Mermaid) と事実シートを作り、コミット済みと一致するか
 // 各章 (verify-doc.mjs --pages README.md,01-….md,…)
 //   checks.json の再実行、引用の照合、図の検査、HTML の vlmkit ゲート
 import { spawnSync } from 'node:child_process';
@@ -124,19 +124,16 @@ book.chapters.forEach((c, i) => {
     if (at !== undefined && at < i && !deps.includes(`${id(i)}->${id(at)}`)) deps.push(`${id(i)}->${id(at)}`);
   }
 });
-const scene = {
-  format: 'vlmkit-anim/scene@1',
-  kind: 'modules',
-  title: `${book.title}: 章の依存 (矢印は「この章は、その章で導入した概念を使う」)`,
-  modules: book.chapters.map((c, i) => ({ id: id(i), label: `${String(i + 1).padStart(2, '0')} ${c.short ?? c.file}` })),
-  deps: deps.map((d) => d.split('->')),
-};
-const expect = { format: 'vlmkit-anim/expect@1', modules: book.chapters.map((_, i) => id(i)), deps };
+const label = (c, i) => `${String(i + 1).padStart(2, '0')} ${c.short ?? c.file}`.replace(/"/g, "'");
+// 題は図に入れない（長い本の題は狭い画面ではみ出す）。README の画像の alt / 本文で言う
+const mmd = ['---', 'config:', '  themeVariables:', '    fontSize: 20px', '  flowchart:', '    wrappingWidth: 480', '---', 'flowchart BT',
+  ...book.chapters.map((c, i) => `  ${id(i)}["${label(c, i)}"]`),
+  ...deps.map((d) => `  ${d.replace('->', ' --> ')}`)].join('\n') + '\n';
+const facts = JSON.stringify({ labels: book.chapters.map(label), edges: deps }, null, 2) + '\n';
 const figDir = join(bookDir, 'figures');
 mkdirSync(figDir, { recursive: true });
-const pairs = [[join(figDir, 'book-map.scene.json'), scene], [join(figDir, 'book-map.expect.json'), expect]];
-for (const [path, data] of pairs) {
-  const text = JSON.stringify(data, null, 2) + '\n';
+const pairs = [[join(figDir, 'book-map.mmd'), mmd], [join(figDir, 'book-map.facts.json'), facts]];
+for (const [path, text] of pairs) {
   if (opt.write) { writeFileSync(path, text); ok(`wrote ${path.split('/').pop()}`); }
   else if (read(`figures/${path.split('/').pop()}`) !== text) ng(`${path.split('/').pop()} does not match book.json`, 're-run with --write');
   else ok(`${path.split('/').pop()} matches book.json`);
