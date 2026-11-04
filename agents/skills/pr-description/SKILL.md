@@ -208,7 +208,7 @@ cd $W && node $EXPLAINER/scripts/figure-check.mjs $W/<name>.mmd --facts $W/<name
 ### 9. 表示を確かめる
 
 - Mermaid：`gh pr view <n> --web` か、ブラウザで PR を開き、図が描画されている（エラーの表示が無い）ことを確かめる。ブラウザが無ければ、手順 5-4 の `mermaid: rendered` までを確かめたと報告する。
-- PNG：`gh pr view <n> --json body -q .body` で、画像の参照にローカルのパスが残っておらず、`https://github.com/` の URL に書き換わっていることを確かめる。ブラウザを操作できるなら、PR のページで画像が読み込まれていること（`naturalWidth` が 0 でない）も確かめる。できなければ、本文の URL までを確かめたと報告する。
+- PNG：`gh pr view <n> --json body -q .body` で、画像の参照にローカルのパスが残っておらず、`https://github.com/user-attachments/assets/…` に書き換わっていることを確かめる。private リポジトリでは、この URL を curl で取ると認証なしで 404、トークン付きでも画像ではなく HTML が返るので、curl では表示を確かめられない。ブラウザを操作できるなら、PR のページで画像が読み込まれていること（`naturalWidth` が 0 でない）も確かめる。できなければ、本文の URL までを確かめたと報告する。
 
 ## 報告
 
