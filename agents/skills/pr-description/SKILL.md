@@ -35,7 +35,7 @@ W=${XDG_CACHE_HOME:-$HOME/.cache}/pr-description/work/<repo>-<branch>; mkdir -p 
 5. 図を作って検査する SVG → PNG が既定。Mermaid で十分なときだけ Mermaid
 6. 本文を書く        下の「本文の型」
 7. 本文を検査する     explain-before-shorten → yomiyasu（日本語の本文のとき）
-8. 出す             gh pr create / gh pr edit --body-file。PNG は PR に直接貼る
+8. 出す             gh pr create / gh pr edit --body-file。PNG は --attach で PR に直接貼る
 9. 表示を確かめる     PR のページで図が描画されているか
 ```
 
@@ -198,15 +198,17 @@ cd $W && node $EXPLAINER/scripts/figure-check.mjs $W/<name>.mmd --facts $W/<name
 
 - push がまだなら、リポジトリの規則が求める確認を取ってから `git push -u origin <branch>`。
 - 本文は `$W/pr-body.md` を `gh pr create --body-file`（手順 0 で PR が見つかったなら `gh pr edit <n> --body-file`）で渡す。セッションの指示が PR の末尾に付ける行（attribution など）を求めていれば、渡す前に足す。
-- **PNG はリポジトリにコミットしない。** `docs/` に置いてコミットの SHA で参照すると、レビュー中に表示されない。PR に直接アップロードする：
-  1. ブラウザを操作できるとき（Claude in Chrome など）：PR のページのコメント欄のファイル入力に PNG を渡し、入力欄に入った `<img … src="https://github.com/user-attachments/assets/…">` を読み取る。**コメントは送信せず、入力欄を空に戻す。** その `<img>` を本文の図の位置に入れて `gh pr edit --body-file`。
-  2. ブラウザを操作できないとき：PR を先に図なしで作り、PNG のパスを示して、利用者にコメント欄へドラッグしてもらい、出てきた URL をもらって本文に入れる。
-- `<img>` には `alt` に図の要点（何が何に変わるか）を 1 文で書き、`width="1040"` 程度を付ける。
+- **PNG はリポジトリにコミットしない。** `docs/` に置いてコミットの SHA で参照すると、レビュー中に表示されない。`gh` の `--attach` で PR に直接アップロードする：
+  1. 本文の図の位置に `![<図の要点>]($W/<name>.png)` と書く。alt には図の要点（何が何に変わるか）を 1 文で書く。
+  2. `gh pr create --body-file $W/pr-body.md --attach $W/<name>.png`（既存の PR なら `gh pr edit <n> --body-file $W/pr-body.md --attach $W/<name>.png`）。図が複数なら `--attach` を図の数だけ繰り返す。gh が本文の参照をアップロード先の URL に書き換える。
+  3. 本文の参照のパスは、`--attach` に渡すパスと一字一句同じに書く（片方だけ相対パスにしない）。違うと参照が書き換わらず、画像が本文の末尾に別に足される。
+- 一部の添付が失敗しても PR は作成・更新され、gh は 0 以外で終わる。そのときは stderr を読み、失敗した PNG だけを `gh pr edit <n> --body-file $W/pr-body.md --attach …` でやり直す。
+- `--attach` が無い古い gh（`gh pr create --help` に出ない）なら、gh を更新するよう利用者に頼む。
 
 ### 9. 表示を確かめる
 
 - Mermaid：`gh pr view <n> --web` か、ブラウザで PR を開き、図が描画されている（エラーの表示が無い）ことを確かめる。ブラウザが無ければ、手順 5-4 の `mermaid: rendered` までを確かめたと報告する。
-- PNG：PR のページで画像が読み込まれていること（`naturalWidth` が 0 でない）を確かめる。
+- PNG：`gh pr view <n> --json body -q .body` で、画像の参照にローカルのパスが残っておらず、`https://github.com/` の URL に書き換わっていることを確かめる。ブラウザを操作できるなら、PR のページで画像が読み込まれていること（`naturalWidth` が 0 でない）も確かめる。できなければ、本文の URL までを確かめたと報告する。
 
 ## 報告
 
