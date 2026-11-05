@@ -201,6 +201,7 @@ cd $W && node $EXPLAINER/scripts/figure-check.mjs $W/<name>.mmd --facts $W/<name
    ```
    ✗ を 0 にする。`✓ #N` は PR のリポジトリにある Issue / PR の題名を出すので、手順 2 のメモと照らして意図した相手かを確かめる（別リポジトリのつもりだったら `owner/repo#N` に直す）。
    `?`（gh から見えず未確認）が残ったら、その参照を報告に書く。△ は直してよいが残しても落ちない。
+   Claude Code では同じ検査が PreToolUse hook（`claude/settings.json`）としても動き、`gh pr|issue create|edit|comment` の本文に ✗ があると実行を止める。止められたら、出力された ✗ を直してから実行し直す。hook は Codex・Copilot CLI では動かないので、この手順は省かない。
 
 報告には、1 と 2 でそれぞれ何を直したか（または「変更なし」）を 1 行ずつ書く。
 

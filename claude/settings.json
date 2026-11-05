@@ -83,6 +83,16 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.claude/skills/pr-description/scripts/ref-check.py\"; [ -f \"$f\" ] || exit 0; python3 \"$f\" --hook",
+            "timeout": 30
+          }
+        ]
       }
     ],
     "PostToolUse": [
