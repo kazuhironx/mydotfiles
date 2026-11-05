@@ -34,7 +34,7 @@ W=${XDG_CACHE_HOME:-$HOME/.cache}/pr-description/work/<repo>-<branch>; mkdir -p 
 4. 図の形式を選ぶ    下の「図の形式と種類」
 5. 図を作って検査する SVG → PNG が既定。Mermaid で十分なときだけ Mermaid
 6. 本文を書く        下の「本文の型」
-7. 本文を検査する     explain-before-shorten → yomiyasu（日本語の本文のとき）
+7. 本文を検査する     explain-before-shorten → yomiyasu（日本語の本文のとき）→ ref-check.py（参照の書き方）
 8. 出す             gh pr create / gh pr edit --body-file。PNG は --attach で PR に直接貼る
 9. 表示を確かめる     PR のページで図が描画されているか
 ```
@@ -174,6 +174,10 @@ cd $W && node $EXPLAINER/scripts/figure-check.mjs $W/<name>.mmd --facts $W/<name
   テストが skipped や INCOMPLETE を含んで終わったら、件数と理由をそのまま書く（「通った」とまとめない）。
 - リポジトリのリリースやバージョンの規則（「この変更は次のリリースで patch を上げる」など）が当たるなら「影響」に書く。
 - Mermaid は ```` ```mermaid ```` のコードブロックで本文に入れる。
+- **Issue と PR の参照**は、PR を出すリポジトリのものだけ `#N` と書き、ほかのリポジトリのものは必ず `owner/repo#N` と書く。GitHub は `#N` を PR のリポジトリの番号として解決するので、別リポジトリの番号を `#N` と書くと、無関係な Issue にリンクされる。
+  - `repo#N`（owner なし）は GitHub がリンクしないので使わない。
+  - `https://github.com/<owner>/<repo>/(pull|issues)/N` の URL は貼らず、上の短い形に直す。
+  - `Fixes` / `Closes` で閉じる Issue も同じ書き方にする（`Fixes owner/repo#N`）。
 - リポジトリの規則（機密の値を本文に貼らない、署名・trailer の決まり）に従う。
 
 ### 7. 本文を検査する
@@ -191,6 +195,12 @@ cd $W && node $EXPLAINER/scripts/figure-check.mjs $W/<name>.mmd --facts $W/<name
    それでも残る info の候補は、残す理由を報告に 1 行書けば残してよい。
    attribution の行など、手順 8 で末尾に足す定型の行は `verify` の後に足してよく、`run` をやり直さない。
 3. 直した本文を手順 2 のメモと読み比べ、主張・数値・ファイル名・コマンドが変わっていないか確かめる。
+4. Issue と PR の参照を検査する（本文の言語に関わらず）：
+   ```sh
+   python3 $S/scripts/ref-check.py $W/pr-body.md   # PR を出すリポジトリは git remote origin から取る。違うなら --repo OWNER/REPO
+   ```
+   ✗ を 0 にする。`✓ #N` は PR のリポジトリにある Issue / PR の題名を出すので、手順 2 のメモと照らして意図した相手かを確かめる（別リポジトリのつもりだったら `owner/repo#N` に直す）。
+   `?`（gh から見えず未確認）が残ったら、その参照を報告に書く。△ は直してよいが残しても落ちない。
 
 報告には、1 と 2 でそれぞれ何を直したか（または「変更なし」）を 1 行ずつ書く。
 
@@ -217,6 +227,7 @@ cd $W && node $EXPLAINER/scripts/figure-check.mjs $W/<name>.mmd --facts $W/<name
 - PR の URL
 - 図を作ったか、作らなかったか。作ったなら種類（Mermaid / PNG）と、figure-check の結果（✗ の数、残した △ と tiny）
 - 本文の検査（explain-before-shorten・yomiyasu）を通したか
+- ref-check.py の結果（✗ の数と、未確認 `?` の参照）
 - 確かめていないこと（表示を確認できなかった、テストを実行できなかった、など）
 
 ## やってはいけないこと
@@ -226,3 +237,4 @@ cd $W && node $EXPLAINER/scripts/figure-check.mjs $W/<name>.mmd --facts $W/<name
 - PNG を `docs/` などに置いてコミットする。
 - 小さな変更に図を付ける。
 - 実行していないテストを「確かめた」に書く。
+- 別リポジトリの Issue / PR を `#N` や `repo#N` で書く。

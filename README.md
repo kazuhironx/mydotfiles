@@ -110,7 +110,8 @@ yomiyasuは、explain-before-shortenが残した条件、用語、数値を削�
 
 PRを作る、または本文を更新するときに、指示がなくても使う自作のskillです。共通の`agents/skills/`に置いています。
 差分から振る舞いと構成の変化を根拠つきで書き出し、図がレビューを助けるときだけ図を作ります。Before/Afterの図は同じ配置で並べたSVGを描いてPNGにするのが既定で、Mermaidで十分なときだけMermaidを使います。
-図は`explainer`の`figure-check.mjs`で、本文は`explain-before-shorten`と`yomiyasu`の順で検査します。PNGはリポジトリにコミットせず、PRに直接アップロードします。
+図は`explainer`の`figure-check.mjs`で、本文は`explain-before-shorten`と`yomiyasu`の順で検査します。
+IssueとPRの参照は、別のリポジトリのものを`owner/repo#N`と書くよう`scripts/ref-check.py`で検査します（`#N`のまま別リポジトリを指す誤りを✗にします）。PNGはリポジトリにコミットせず、PRに直接アップロードします。
 図の道具（playwright、vlmkit、mermaid）は、初回だけ`scripts/setup.sh`が`~/.cache/pr-description/`に入れます。
 
 #### impeccable（UIのレビューと改善）
