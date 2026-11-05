@@ -30,6 +30,7 @@ NO_OWNER_RE = re.compile(r"(?<![\w./#&-])(?P<r>[A-Za-z][\w.-]*)#(?P<n>\d+)\b")
 BARE_RE = re.compile(r"(?<![\w/&#-])#(?P<n>\d+)\b")
 FENCE_RE = re.compile(r"^\s*(```|~~~)")
 INLINE_CODE_RE = re.compile(r"`[^`]*`")
+BARE_MARK = "意図した相手か確かめる"
 GH_WRITE_RE = re.compile(r"\bgh\s+(?:pr|issue)\s+(?:create|edit|comment)\b")
 
 
@@ -128,7 +129,7 @@ def check(text, cur):
             if st == "missing":
                 add("✗", lineno, m.group(), f"{cur} に無い。別リポジトリなら <owner>/<repo>#{m['n']} と書く")
             elif st == "found":
-                add("✓", lineno, m.group(), f"{cur} の {desc} — 意図した相手か確かめる")
+                add("✓", lineno, m.group(), f"{cur} の {desc} — {BARE_MARK}")
             else:
                 add("?", lineno, m.group(), f"未確認（{desc}）")
     return out, errors
@@ -209,6 +210,7 @@ def hook_main():
     cwd = data.get("cwd") or os.getcwd()
 
     reports = []
+    bare_found = []
     for text, repo in bodies_from_command(command, cwd):
         cur = repo or current_repo(cwd)
         if not cur:
@@ -216,7 +218,18 @@ def hook_main():
         lines, errors = check(text, cur)
         if errors:
             reports.append(f"repo: {cur}\n" + "\n".join(l for l in lines if not l.startswith("✓")))
+        bare_found += [l for l in lines if l.startswith("✓") and BARE_MARK in l]
     if not reports:
+        if bare_found:
+            # A bare #N that exists in this repo may still be meant for another
+            # repo; only the agent knows the intent, so show it the titles
+            # without blocking.
+            print(json.dumps({"hookSpecificOutput": {
+                "hookEventName": "PreToolUse",
+                "additionalContext": "ref-check: 本文の #N は次の Issue/PR にリンクされる。"
+                "意図した相手でなければ（別リポジトリのつもりなら）、owner/repo#N に直して"
+                " gh pr edit / gh issue edit（コメントなら --edit-last）で直す。\n" + "\n".join(bare_found),
+            }}, ensure_ascii=False))
         return 0
     print("ref-check: Issue/PR の参照の書き方に ✗ があるので止めた。"
           "同じリポジトリは #N、別リポジトリは owner/repo#N と書いて実行し直す。\n"
