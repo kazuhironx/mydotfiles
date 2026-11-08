@@ -4,6 +4,12 @@ add_newline = true
 # claude/statusline.sh の先頭バッジと配色を揃える。ssh 先は赤、ローカルは緑。
 # ホスト名が会社指定で WSL かネイティブか見分けにくいため、WSL だけ WSL: を前置する。
 format = '${custom.localhost}${custom.sshhost}$all'
+# herdr の pane ID (w<N>:p<M>)。herdr skill で pane を指名するときに使う
+right_format = '${env_var.HERDR_PANE_ID}'
+
+[env_var.HERDR_PANE_ID]
+format = '[$env_value]($style)'
+style = 'fg:141'
 
 [username]
 disabled = true

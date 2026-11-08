@@ -91,6 +91,9 @@ if [ -n "${SSH_CONNECTION:-}" ]; then
 else
   line1+="$(C 16)\033[48;5;34m${B} ${WSL_DISTRO_NAME:+WSL:}${host} ${R} "
 fi
+# herdr skill で他 pane を指名するとき ID を引く手間を省く。pane を別 workspace へ
+# move すると ID が変わるが、環境変数は起動時の値のまま残る点に注意
+[ -n "${HERDR_PANE_ID:-}" ] && line1+="$(C 141)${HERDR_PANE_ID}${R} "
 case "$ime" in
   "") ;;
   A)  line1+="${DIM}[A]${R} " ;;
