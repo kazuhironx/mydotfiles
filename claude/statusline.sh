@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Claude Code statusLine
 # stdin に来る JSON のスキーマは `claude` バイナリの実装に合わせている:
+#   session_name  ← /rename などで名前を付けるまで欠落する
 #   model{id,display_name} workspace{current_dir,project_dir} version output_style{name}
 #   cost{total_cost_usd,total_lines_added,total_lines_removed}
 #   context_window{total_input_tokens,context_window_size,used_percentage}
@@ -94,6 +95,8 @@ fi
 # herdr skill で他 pane を指名するとき ID を引く手間を省く。pane を別 workspace へ
 # move すると ID が変わるが、環境変数は起動時の値のまま残る点に注意
 [ -n "${HERDR_PANE_ID:-}" ] && line1+="$(C 141)${HERDR_PANE_ID}${R} "
+session_name=$(j '.session_name // empty')
+[ -n "$session_name" ] && line1+="$(C 223)${B}«${session_name}»${R} "
 case "$ime" in
   "") ;;
   A)  line1+="${DIM}[A]${R} " ;;
